@@ -1,3 +1,5 @@
+import { cn } from "@/lib/helpers";
+
 type BlogContentSectionProps = {
   content: string;
   className?: string;
@@ -8,7 +10,7 @@ export function BlogContentSection({
   className,
 }: BlogContentSectionProps) {
   return (
-    <section className={className}>
+    <section className={cn("blog-content-section", className)}>
       <div>{content}</div>
     </section>
   );

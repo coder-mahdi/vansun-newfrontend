@@ -1,13 +1,12 @@
 import type { NavItem } from "@/types/common";
 
-export const mainNav: NavItem[] = [
-  { label: "Home", href: "/" },
+export const headerNav: NavItem[] = [
   { label: "About", href: "/about" },
-  { label: "Gallery", href: "/gallery" },
-  { label: "Blogs", href: "/blogs" },
+  { label: "Blog", href: "/blogs" },
+  { label: "Services", href: "/services" },
 ];
 
 export const bookNav: NavItem[] = [
-  { label: "Piercing", href: "/book/piercing" },
-  { label: "Tattoo", href: "/book/tattoo" },
+  { label: "Book Tattoo", href: "/book/tattoo" },
+  { label: "Book Piercing", href: "/book/piercing" },
 ];

@@ -1,13 +1,16 @@
 import Link from "next/link";
-import { mainNav } from "@/data/navigation";
+import { cn } from "@/lib/helpers";
+import { headerNav } from "@/data/navigation";
 
 export function MainNav({ className }: { className?: string }) {
   return (
-    <nav className={className} aria-label="Main">
-      <ul>
-        {mainNav.map((item) => (
-          <li key={item.href}>
-            <Link href={item.href}>{item.label}</Link>
+    <nav className={cn("main-nav", className)} aria-label="Main">
+      <ul className="main-nav__list">
+        {headerNav.map((item) => (
+          <li key={item.href} className="main-nav__item">
+            <Link className="main-nav__link" href={item.href}>
+              {item.label}
+            </Link>
           </li>
         ))}
       </ul>

@@ -1,4 +1,5 @@
 import { galleryItems } from "@/data/gallery";
+import { cn } from "@/lib/helpers";
 import { GalleryCard } from "./GalleryCard";
 
 type GalleryGridProps = {
@@ -11,7 +12,7 @@ export function GalleryGrid({ category, className }: GalleryGridProps) {
     ? galleryItems.filter((i) => i.category === category)
     : galleryItems;
   return (
-    <div className={className}>
+    <div className={cn("gallery-grid", className)}>
       {items.map((item) => (
         <GalleryCard key={item.id} item={item} />
       ))}

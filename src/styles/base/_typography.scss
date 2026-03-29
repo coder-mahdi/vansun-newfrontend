@@ -1,0 +1,60 @@
+// Typography variables
+$font-primary: "Lato", sans-serif;
+$font-heading: "Wix Madefor Text", sans-serif;
+
+$font-size-base: 16px;
+$font-size-h1: 64px;
+$font-size-h2: 36px;
+$font-size-button: 14px;
+
+$font-weight-regular: 400;
+$font-weight-bold: 700;
+
+$line-height-base: 1.5;
+$line-height-heading: 1.2;
+$line-height-tight: 1.25;
+$line-height-loose: 1.75;
+
+$letter-spacing-base: 0.5px;
+$letter-spacing-wide: 1px;
+$letter-spacing-tight: -0.5px;
+
+$text-transform-uppercase: uppercase;
+$text-transform-capitalize: capitalize;
+$text-transform-lowercase: lowercase;
+$text-transform-none: none;
+
+// Typography — elements
+html {
+  font-size: $font-size-base;
+  font-family: $font-primary;
+}
+
+body {
+  font-family: $font-primary;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-base;
+  letter-spacing: $letter-spacing-base;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: $font-heading;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-heading;
+}
+
+h1 {
+  font-size: $font-size-h1;
+  letter-spacing: -0.03em;
+  font-weight: $font-weight-bold;
+  line-height: 0.9;
+}
+
+h2 {
+  font-size: $font-size-h2;
+}
