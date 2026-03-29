@@ -16,3 +16,8 @@ export const bookSubNav: NavItem[] = [
   { label: "Tattoo", href: "/book/tattoo" },
   { label: "Piercing", href: "/book/piercing" },
 ];
+
+export const footerConsentNav: NavItem[] = [
+  { label: "Consent Piercing", href: "/consent-form/piercing" },
+  { label: "Consent Tattoo", href: "/consent-form/tattoo" },
+];
