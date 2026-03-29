@@ -10,3 +10,9 @@ export const bookNav: NavItem[] = [
   { label: "Book Tattoo", href: "/book/tattoo" },
   { label: "Book Piercing", href: "/book/piercing" },
 ];
+
+/** Mobile overlay: one "Book" toggle → these two links */
+export const bookSubNav: NavItem[] = [
+  { label: "Tattoo", href: "/book/tattoo" },
+  { label: "Piercing", href: "/book/piercing" },
+];
