@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "@/lib/helpers";
 import type { BlogSummary } from "@/types/blog";
 
 type BlogCardProps = {
@@ -8,7 +9,7 @@ type BlogCardProps = {
 
 export function BlogCard({ blog, className }: BlogCardProps) {
   return (
-    <article className={className}>
+    <article className={cn("blog-card", className)}>
       <Link href={`/blogs/${blog.slug}`}>{blog.title}</Link>
       <p>{blog.excerpt}</p>
     </article>

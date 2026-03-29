@@ -1,7 +1,8 @@
 "use client";
 
-import { piercingPlacements } from "@/data/booking";
 import { Select } from "@/components/ui/Select";
+import { cn } from "@/lib/helpers";
+import { piercingPlacements } from "@/data/booking";
 
 type PlacementSelectorProps = {
   name?: string;
@@ -13,7 +14,7 @@ export function PlacementSelector({
   className,
 }: PlacementSelectorProps) {
   return (
-    <Select className={className} name={name} defaultValue="">
+    <Select className={cn("placement-selector", className)} name={name} defaultValue="">
       <option value="" disabled>
         Placement
       </option>

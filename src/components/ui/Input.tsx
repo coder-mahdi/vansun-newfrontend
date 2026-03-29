@@ -1,7 +1,8 @@
 import type { InputHTMLAttributes } from "react";
+import { cn } from "@/lib/helpers";
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
 export function Input({ className, ...props }: InputProps) {
-  return <input className={className} {...props} />;
+  return <input className={cn("ui-input", className)} {...props} />;
 }

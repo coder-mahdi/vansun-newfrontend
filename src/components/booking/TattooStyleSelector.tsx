@@ -1,7 +1,8 @@
 "use client";
 
-import { tattooStyles } from "@/data/booking";
 import { Select } from "@/components/ui/Select";
+import { cn } from "@/lib/helpers";
+import { tattooStyles } from "@/data/booking";
 
 type TattooStyleSelectorProps = {
   name?: string;
@@ -13,7 +14,7 @@ export function TattooStyleSelector({
   className,
 }: TattooStyleSelectorProps) {
   return (
-    <Select className={className} name={name} defaultValue="">
+    <Select className={cn("tattoo-style-selector", className)} name={name} defaultValue="">
       <option value="" disabled>
         Style
       </option>

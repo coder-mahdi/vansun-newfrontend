@@ -1,0 +1,39 @@
+.site-header {
+  background-color: $color-header-bg;
+  color: $color-text-light;
+
+  &__inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding: 0.875rem 1.25rem;
+    min-height: 3.5rem;
+  }
+
+  &__brand {
+    justify-self: start;
+    font-family: $font-heading;
+    font-weight: $font-weight-bold;
+    font-size: 1.125rem;
+    letter-spacing: $letter-spacing-tight;
+    color: $color-text-light;
+
+    &:hover {
+      opacity: 0.92;
+    }
+  }
+
+  &__center {
+    justify-self: center;
+    grid-column: 2;
+  }
+
+  &__nav {
+    justify-self: end;
+    grid-column: 3;
+  }
+}
