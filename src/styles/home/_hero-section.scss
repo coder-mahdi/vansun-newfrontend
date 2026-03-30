@@ -6,7 +6,9 @@
   overflow: hidden;
   background-color: $color-light;
   transition: filter 0.3s ease;
+  /* Below .services so the services block can slide over the hero */
   z-index: 1;
+  isolation: isolate;
 
   &.blurred {
     filter: blur(5px);

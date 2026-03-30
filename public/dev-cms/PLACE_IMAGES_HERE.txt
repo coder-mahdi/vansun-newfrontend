@@ -1,2 +1,5 @@
 Drop image files here for local / mock content mode.
 Use names you reference in code via contentImageUrl("your-file.jpg", cmsUrlFromApi).
+
+Home hero (mock): hero-1.jpg, hero-2.jpg
+Home services (mock): service-tattoo.jpg, service-piercing.jpg

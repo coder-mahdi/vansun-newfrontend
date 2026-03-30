@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { bookSubNav, headerNav } from "@/data/navigation";
 import { cn } from "@/lib/helpers";
 import { BookNowDropdown } from "./BookNowDropdown";
@@ -13,6 +13,11 @@ export function SiteHeader({ className }: { className?: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [bookSubOpen, setBookSubOpen] = useState(false);
 
+  const closeMenu = useCallback(() => {
+    setBookSubOpen(false);
+    setMenuOpen(false);
+  }, []);
+
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => {
@@ -23,26 +28,23 @@ export function SiteHeader({ className }: { className?: string }) {
   useEffect(() => {
     if (!menuOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
+      if (e.key === "Escape") closeMenu();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
+  }, [menuOpen, closeMenu]);
 
   useEffect(() => {
     const mq = window.matchMedia(`(min-width: ${DESKTOP_MIN}px)`);
     const onChange = () => {
-      if (mq.matches) setMenuOpen(false);
+      if (mq.matches) {
+        setBookSubOpen(false);
+        setMenuOpen(false);
+      }
     };
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
   }, []);
-
-  useEffect(() => {
-    if (!menuOpen) setBookSubOpen(false);
-  }, [menuOpen]);
-
-  const closeMenu = () => setMenuOpen(false);
 
   return (
     <header
@@ -75,7 +77,10 @@ export function SiteHeader({ className }: { className?: string }) {
           aria-expanded={menuOpen}
           aria-controls="site-header-overlay"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
-          onClick={() => setMenuOpen((v) => !v)}
+          onClick={() => {
+            if (menuOpen) setBookSubOpen(false);
+            setMenuOpen((v) => !v);
+          }}
         >
           <span className="site-header__hamburger-line" />
           <span className="site-header__hamburger-line" />

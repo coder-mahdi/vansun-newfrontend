@@ -1,13 +1,13 @@
 import { AboutUsSection } from "@/components/home/AboutUsSection";
 import { FeaturedBlogsSection } from "@/components/home/FeaturedBlogsSection";
 import { HeroSection } from "@/components/home/HeroSection";
-import { MyWorkSection } from "@/components/home/MyWorkSection";
+import { ServicesSection } from "@/components/home/ServicesSection";
 
 export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <MyWorkSection />
+      <ServicesSection />
       <AboutUsSection />
       <FeaturedBlogsSection />
     </>
