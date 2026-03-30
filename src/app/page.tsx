@@ -1,6 +1,7 @@
 import { AboutUsSection } from "@/components/home/AboutUsSection";
 import { FeaturedBlogsSection } from "@/components/home/FeaturedBlogsSection";
 import { HeroSection } from "@/components/home/HeroSection";
+import { JewelryGallerySection } from "@/components/home/JewelryGallerySection";
 import { ServicesSection } from "@/components/home/ServicesSection";
 
 export default function HomePage() {
@@ -8,6 +9,7 @@ export default function HomePage() {
     <>
       <HeroSection />
       <ServicesSection />
+      <JewelryGallerySection />
       <AboutUsSection />
       <FeaturedBlogsSection />
     </>

@@ -9,3 +9,6 @@ $color-header-bg: $color-primary;
 $color-footer-bg: $color-primary;
 $color-text-light: $color-light;
 $color-bg-light: $color-light;
+
+/** Distinct surface for home blog strip (About uses `$color-light`). */
+$color-surface-blog: rgb(223, 218, 196);

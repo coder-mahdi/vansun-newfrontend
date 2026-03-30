@@ -12,11 +12,8 @@
   background-color: $color-light;
   box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.08);
   height: auto;
-  margin-bottom: -18vh;
-
-  @media (min-width: 1024px) {
-    margin-bottom: 4vh;
-  }
+  margin-top: 0;
+  margin-bottom: 0;
 
   @media (max-width: 1023px) {
     min-height: 0;
@@ -229,19 +226,6 @@
     background-color: transparent;
   }
 
-  @media (max-width: 900px) {
-    margin-top: 0;
-    margin-bottom: 28vh;
-  }
-
-  @media (max-width: 767px) {
-    margin-bottom: 30vh;
-  }
-
-  @media (max-width: 480px) {
-    margin-top: 0;
-    margin-bottom: 36vh;
-  }
 }
 
 @keyframes services-blink {

@@ -1,2 +1,258 @@
 .featured-blogs-section {
+  position: relative;
+  z-index: 4;
+  background-color: $color-surface-blog;
+  color: $color-primary;
+  padding: 2.5rem 1.25rem 3rem;
+
+  @media (min-width: 768px) {
+    padding: 3rem 2rem 3.5rem;
+  }
+
+  &__title {
+    font-size: $font-size-h2;
+    margin: 0 0 1.75rem;
+    text-align: center;
+    color: $color-primary;
+
+    @media (min-width: 1023px) {
+      margin-bottom: 2.25rem;
+    }
+  }
+
+  &__empty {
+    text-align: center;
+    margin: 0;
+    color: $color-primary;
+  }
+}
+
+.featured-blogs-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  max-width: 100%;
+  margin-inline: auto;
+  align-items: stretch;
+
+  @media (min-width: 1023px) {
+    flex-direction: row;
+    gap: 0;
+    max-width: none;
+    margin-inline: 0;
+  }
+}
+
+.featured-blogs-column {
+  @media (min-width: 1023px) {
+    flex: 0 0 50%;
+    max-width: 50%;
+    width: 50%;
+  }
+
+  &--articles {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 0;
+
+    @media (min-width: 1023px) {
+      padding: 0 2rem 0 0;
+      gap: 2.25rem;
+      justify-content: flex-start;
+    }
+
+    @media (min-width: 1200px) {
+      padding-right: 2.5rem;
+    }
+  }
+
+  &--video {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    @media (min-width: 1023px) {
+      padding: 0 0 0 2rem;
+      border-left: 1px solid rgba(61, 44, 0, 0.12);
+    }
+
+    @media (min-width: 1200px) {
+      padding-left: 2.5rem;
+    }
+  }
+}
+
+.featured-blogs-featured {
+  margin: 0;
+
+  &__link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+    border-radius: 0;
+    overflow: hidden;
+    background-color: rgba(250, 255, 238, 0.85);
+    outline-offset: 2px;
+
+    &:hover .featured-blogs-featured__cta {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-primary;
+    }
+  }
+
+  &__media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    min-height: 12rem;
+    background-color: rgba(61, 44, 0, 0.08);
+  }
+
+  &__img {
+    object-fit: cover;
+    object-position: center;
+  }
+
+  &__body {
+    padding: 1.25rem 1.35rem 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+
+    @media (min-width: 1023px) {
+      padding: 1.5rem 1.5rem 1.75rem;
+    }
+  }
+
+  &__heading {
+    font-size: clamp(1.25rem, 2.5vw, $font-size-h2);
+    margin: 0;
+    line-height: $line-height-heading;
+    color: $color-primary;
+  }
+
+  &__excerpt {
+    margin: 0;
+    font-size: $font-size-base;
+    line-height: $line-height-loose;
+    color: $color-primary;
+    flex: 1;
+  }
+
+  &__cta {
+    font-size: $font-size-button;
+    font-weight: $font-weight-bold;
+    margin-top: 0.25rem;
+    color: $color-primary;
+  }
+}
+
+.featured-blogs-titles {
+  padding: 0 0.25rem;
+
+  @media (min-width: 1023px) {
+    padding: 0;
+  }
+
+  &__label {
+    font-size: 1rem;
+    font-weight: $font-weight-bold;
+    margin: 0 0 1rem;
+    letter-spacing: $letter-spacing-wide;
+    text-transform: $text-transform-uppercase;
+    color: $color-primary;
+  }
+
+  &__empty {
+    margin: 0;
+    font-size: $font-size-base;
+    line-height: $line-height-base;
+    color: rgba(61, 44, 0, 0.75);
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  &__list a {
+    display: block;
+    font-size: $font-size-base;
+    line-height: $line-height-tight;
+    color: $color-primary;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+
+    &:hover {
+      opacity: 0.85;
+    }
+  }
+}
+
+.featured-blogs-video {
+  width: 100%;
+
+  &__label {
+    font-size: 1rem;
+    font-weight: $font-weight-bold;
+    margin: 0 0 1rem;
+    letter-spacing: $letter-spacing-wide;
+    text-transform: $text-transform-uppercase;
+    color: $color-primary;
+  }
+
+  &__frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: rgba(61, 44, 0, 0.12);
+    overflow: hidden;
+  }
+
+  &__embed {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  &__thumb-wrap {
+    position: absolute;
+    inset: 0;
+  }
+
+  &__thumb {
+    object-fit: cover;
+    object-position: center;
+  }
+
+  &__placeholder {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      145deg,
+      rgba(190, 183, 144, 0.55),
+      rgba(250, 255, 238, 0.75)
+    );
+  }
+
+  &__caption {
+    margin: 0.75rem 0 0;
+    font-size: $font-size-base;
+    line-height: $line-height-base;
+    color: $color-primary;
+  }
 }

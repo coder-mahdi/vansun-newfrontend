@@ -6,6 +6,7 @@
   overflow: hidden;
   background-color: $color-light;
   transition: filter 0.3s ease;
+  margin-bottom: 0;
   /* Below .services so the services block can slide over the hero */
   z-index: 1;
   isolation: isolate;
@@ -55,7 +56,9 @@
     }
   }
 
-  .slider-track:hover {
+  /* Pause marquee when the pointer is over the visible strip or any slide */
+  .slider-container:hover .slider-track,
+  .slider-track:has(.slider-item:hover) {
     animation-play-state: paused;
   }
 
@@ -84,7 +87,6 @@
 
   @media screen and (max-width: 1023px) {
     height: 75vh;
-    margin-bottom: 3rem;
 
     .hero-content {
       padding-bottom: 3rem;
@@ -115,7 +117,6 @@
 
   @media screen and (max-width: 767px) {
     height: 50vh;
-    margin-bottom: 2rem;
 
     .hero-content {
       padding-bottom: 2rem;
