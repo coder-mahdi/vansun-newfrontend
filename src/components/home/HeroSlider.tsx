@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Loader } from "@/components/ui/Loader";
 import {
@@ -22,11 +22,42 @@ const HERO_PAGE_SLUG = "hero-data";
 
 type LoadStatus = "loading" | "ready" | "error";
 
+/** Match `.slider-item` widths in `_hero-section.scss` breakpoints (approximate vw). */
+function approxHeroSlideWidth(viewportWidth: number): number {
+  if (viewportWidth <= 480) return 120;
+  if (viewportWidth <= 767) return 140;
+  if (viewportWidth <= 1023) return 180;
+  return 200;
+}
+
+/**
+ * Build a track of `[…half, …half]` so `translateX(-50%)` loops seamlessly and
+ * each half is at least ~2× viewport wide (no empty strip beside the marquee).
+ */
+function buildMarqueeSlides(images: WpMedia[], viewportWidth: number): WpMedia[] {
+  if (images.length === 0) return [];
+  const slideW = approxHeroSlideWidth(viewportWidth);
+  const cycleW = images.length * slideW;
+  const repeatsPerHalf = Math.max(2, Math.ceil((viewportWidth * 2) / cycleW));
+  const half = Array.from({ length: repeatsPerHalf }, () => images).flat();
+  return [...half, ...half];
+}
+
 export function HeroSlider({ className }: { className?: string }) {
   const [heroData, setHeroData] = useState<HeroAcfBlock | null>(null);
   const [heroImages, setHeroImages] = useState<WpMedia[]>([]);
   const [status, setStatus] = useState<LoadStatus>("loading");
   const [isBlurred, setIsBlurred] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(1200);
+
+  useEffect(() => {
+    function syncWidth() {
+      setViewportWidth(window.innerWidth);
+    }
+    syncWidth();
+    window.addEventListener("resize", syncWidth);
+    return () => window.removeEventListener("resize", syncWidth);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -91,6 +122,11 @@ export function HeroSlider({ className }: { className?: string }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const marqueeSlides = useMemo(
+    () => buildMarqueeSlides(heroImages, viewportWidth),
+    [heroImages, viewportWidth]
+  );
+
   if (status === "loading" || !heroData) {
     return (
       <section
@@ -130,7 +166,7 @@ export function HeroSlider({ className }: { className?: string }) {
       <div className="hero-content">
         <div className="slider-container">
           <div className="slider-track">
-            {[...heroImages, ...heroImages].map((image, index) => {
+            {marqueeSlides.map((image, index) => {
               const altText =
                 image.alt_text?.trim() ||
                 `${title ?? "Hero"} hero image ${index + 1}`;
