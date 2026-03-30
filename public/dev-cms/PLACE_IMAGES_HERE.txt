@@ -1,0 +1,2 @@
+Drop image files here for local / mock content mode.
+Use names you reference in code via contentImageUrl("your-file.jpg", cmsUrlFromApi).
