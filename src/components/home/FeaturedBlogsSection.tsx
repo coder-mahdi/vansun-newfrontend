@@ -1,15 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import {
-  blogSummaries,
-  featuredLatestVideo,
-} from "@/data/blogs";
+import { featuredLatestVideo } from "@/data/blogs";
 import { devCmsAsset } from "@/lib/content-assets";
 import { cn } from "@/lib/helpers";
+import type { BlogSummary } from "@/types/blog";
 
-export function FeaturedBlogsSection({ className }: { className?: string }) {
-  const [latest, ...rest] = blogSummaries;
+type FeaturedBlogsSectionProps = {
+  posts: BlogSummary[];
+  className?: string;
+};
+
+export function FeaturedBlogsSection({
+  posts,
+  className,
+}: FeaturedBlogsSectionProps) {
+  const [latest, ...rest] = posts;
   const recentTitles = rest.slice(0, 6);
 
   const videoThumbUrl = featuredLatestVideo.thumbnailLocal
@@ -47,6 +53,7 @@ export function FeaturedBlogsSection({ className }: { className?: string }) {
                   </div>
                 ) : null}
                 <div className="featured-blogs-featured__body">
+                  <p className="featured-blogs-featured__keyword">{latest.keyword}</p>
                   <h3 className="featured-blogs-featured__heading">
                     {latest.title}
                   </h3>

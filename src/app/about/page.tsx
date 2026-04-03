@@ -1,15 +1,23 @@
+import type { Metadata } from "next";
+
 import { AboutHero } from "@/components/about/AboutHero";
-import { ArtistSection } from "@/components/about/ArtistSection";
-import { StudioStorySection } from "@/components/about/StudioStorySection";
-import { StudioValuesSection } from "@/components/about/StudioValuesSection";
+import { BookingNoticeSection } from "@/components/about/BookingNoticeSection";
+import { PiercerSection } from "@/components/about/PiercerSection";
+import { PiercingRoomSection } from "@/components/about/PiercingRoomSection";
+
+export const metadata: Metadata = {
+  title: "About",
+  description:
+    "Vansu Studio — piercing room, experienced piercer, sterilization standards, and booking information.",
+};
 
 export default function AboutPage() {
   return (
     <>
       <AboutHero />
-      <StudioStorySection />
-      <ArtistSection />
-      <StudioValuesSection />
+      <PiercingRoomSection />
+      <PiercerSection />
+      <BookingNoticeSection />
     </>
   );
 }

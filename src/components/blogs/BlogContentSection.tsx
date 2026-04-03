@@ -11,7 +11,10 @@ export function BlogContentSection({
 }: BlogContentSectionProps) {
   return (
     <section className={cn("blog-content-section", className)}>
-      <div>{content}</div>
+      <div
+        className="blog-content-section__html"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
     </section>
   );
 }
