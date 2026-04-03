@@ -1,0 +1,40 @@
+.main-nav {
+  font-family: $font-primary;
+
+  &__list {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.5rem;
+    font-size: 1.1rem;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-wide;
+    text-transform: uppercase;
+    color: $color-light-hex;
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    transition: opacity 0.15s ease;
+
+    &:link,
+    &:visited,
+    &:hover,
+    &:active {
+      color: $color-light-hex;
+    }
+
+    &:hover {
+      opacity: 0.85;
+    }
+  }
+}

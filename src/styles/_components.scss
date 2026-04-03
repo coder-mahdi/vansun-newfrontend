@@ -1,0 +1,50 @@
+// Component styles — one import chain; consumed only from globals.scss
+
+@import "about/about-hero";
+@import "about/piercing-room-section";
+@import "about/piercer-section";
+@import "about/booking-notice-section";
+
+@import "blogs/blog-card";
+@import "blogs/blog-content-section";
+@import "blogs/blog-grid";
+@import "blogs/blog-hero";
+@import "blogs/blogs-page";
+@import "blogs/related-blogs-section";
+
+@import "booking/booking-faq-section";
+@import "booking/jewelry-strip-section";
+@import "booking/piercing-booking-form";
+@import "booking/placement-selector";
+@import "booking/tattoo-booking-form";
+@import "booking/tattoo-reference-strip-section";
+@import "booking/tattoo-style-selector";
+
+@import "gallery/gallery-card";
+@import "gallery/gallery-grid";
+@import "gallery/gallery-header";
+@import "gallery/gallery-type-selector";
+
+@import "home/about-us-section";
+@import "home/featured-blogs-section";
+@import "home/hero-section";
+@import "home/hero-slider";
+@import "home/jewelry-gallery-section";
+@import "home/services-section";
+
+@import "layout/book-now-dropdown";
+@import "layout/main-nav";
+@import "layout/mobile-menu";
+@import "layout/site-footer";
+@import "layout/site-header";
+
+@import "ui/accordion";
+@import "ui/button";
+@import "ui/dropdown";
+@import "ui/input";
+@import "ui/loader";
+@import "ui/message";
+@import "ui/modal";
+@import "ui/select";
+@import "ui/slider";
+@import "ui/textarea";

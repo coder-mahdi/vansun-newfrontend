@@ -1,0 +1,13 @@
+// Single entry: Tailwind + base + all component styles (no per-component SCSS imports)
+@import "tailwindcss";
+
+@import "abstracts/colors";
+@import "abstracts/variables";
+@import "abstracts/mixins";
+
+@import "base/fonts";
+@import "base/theme";
+@import "base/typography";
+@import "base/reset";
+
+@import "components";

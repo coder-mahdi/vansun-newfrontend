@@ -1,0 +1,167 @@
+.hero {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  background-color: $color-light;
+  transition: filter 0.3s ease;
+  margin-bottom: 0;
+  /* Below .services so the services block can slide over the hero */
+  z-index: 1;
+  isolation: isolate;
+
+  &.blurred {
+    filter: blur(5px);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding-bottom: 4rem;
+  }
+
+  .slider-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .slider-track {
+    display: flex;
+    animation: hero-slider-scroll 20s linear infinite;
+    width: fit-content;
+  }
+
+  .slider-item {
+    flex: 0 0 auto;
+    width: 200px;
+
+    img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      object-position: center;
+    }
+  }
+
+  @keyframes hero-slider-scroll {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Pause marquee when the pointer is over the visible strip or any slide */
+  .slider-container:hover .slider-track,
+  .slider-track:has(.slider-item:hover) {
+    animation-play-state: paused;
+  }
+
+  h1 {
+    position: relative;
+    z-index: 1;
+    color: $color-primary;
+    text-shadow: none;
+    font-size: 10rem;
+    width: 100%;
+    margin: 0 auto 1rem;
+    line-height: 1.1;
+    letter-spacing: 0.1em;
+    font-stretch: expanded;
+    text-transform: uppercase;
+    padding-top: 2rem;
+  }
+
+  h2 {
+    position: relative;
+    z-index: 2;
+    color: $color-primary;
+    text-shadow: none;
+    margin-bottom: 2rem;
+  }
+
+  @media screen and (max-width: 1023px) {
+    height: 75vh;
+
+    .hero-content {
+      padding-bottom: 3rem;
+    }
+
+    .slider-item {
+      width: 180px;
+    }
+
+    h1 {
+      font-size: 7rem;
+      padding-top: 2.5rem;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-top: 2rem;
+    }
+  }
+
+  @media screen and (max-width: 900px) {
+    height: 80vh;
+  }
+
+  @media screen and (max-width: 780px) {
+    height: 65vh;
+  }
+
+  @media screen and (max-width: 767px) {
+    height: 50vh;
+
+    .hero-content {
+      padding-bottom: 2rem;
+    }
+
+    .slider-item {
+      width: 140px;
+    }
+
+    h1 {
+      font-size: 4rem;
+      padding-top: 3rem;
+      letter-spacing: 0.05em;
+    }
+
+    h2 {
+      margin-top: 2rem;
+      font-size: 1.3rem;
+    }
+  }
+
+  @media screen and (max-width: 650px) {
+    height: 60vh;
+  }
+
+  @media screen and (max-width: 600px) {
+    height: 70vh;
+  }
+
+  @media screen and (max-width: 583px) {
+    height: 60vh;
+  }
+
+  @media screen and (max-width: 480px) {
+    height: 57vh;
+
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 3rem;
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+
+    .slider-item {
+      width: 120px;
+    }
+  }
+}

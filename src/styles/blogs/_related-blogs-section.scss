@@ -1,0 +1,18 @@
+.related-blogs-section {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 3.5rem;
+  background-color: $color-light;
+  color: $color-primary;
+  border-top: 1px solid rgba(61, 44, 0, 0.12);
+
+  @media (min-width: 768px) {
+    padding: 3rem 2rem 4rem;
+  }
+
+  h2 {
+    font-size: $font-size-h2;
+    margin: 0 0 1.5rem;
+    color: $color-primary;
+  }
+}
