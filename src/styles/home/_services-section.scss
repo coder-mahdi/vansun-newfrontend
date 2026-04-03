@@ -175,6 +175,8 @@
 
     .button-group {
       display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       align-items: center;
       gap: 1rem;
       margin-top: 0.75rem;
@@ -188,6 +190,24 @@
       @media (max-width: 480px) {
         margin-top: 0.5rem;
         gap: 0.6rem;
+      }
+
+      .btn-gallery {
+        color: var(--brown-color);
+        text-decoration: none;
+        font-weight: 400;
+        font-size: 0.95rem;
+        border-bottom: 1px solid currentColor;
+        padding-bottom: 1px;
+        opacity: 0.92;
+
+        @media (max-width: 480px) {
+          font-size: 0.88rem;
+        }
+
+        &:hover {
+          opacity: 1;
+        }
       }
 
       .btn-book {
@@ -224,6 +244,10 @@
     border-color: rgb(61, 44, 0);
     animation: services-blink-second 1.5s infinite;
     background-color: transparent;
+  }
+
+  .services-item:nth-child(2) .button-group .btn-gallery {
+    color: rgb(61, 44, 0);
   }
 
 }

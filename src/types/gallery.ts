@@ -1,4 +1,4 @@
-export type GalleryCategory = "piercing" | "tattoo";
+export type GalleryCategory = "piercing" | "tattoo" | "jewelry";
 
 export type GalleryItem = {
   id: string;
