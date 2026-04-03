@@ -1,2 +1,13 @@
-.tattoo-booking-form {
+.tattoo-booking-form__review-thumb {
+  margin-bottom: 1.25rem;
+}
+
+.tattoo-booking-form__review-img {
+  display: block;
+  max-width: 100%;
+  max-height: 240px;
+  margin-top: 0.5rem;
+  border-radius: 8px;
+  object-fit: contain;
+  border: 1px solid rgba(250, 255, 238, 0.2);
 }

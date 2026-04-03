@@ -1,2 +1,124 @@
 .booking-faq-section {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #faffee;
+  padding: 2.5rem 1.5rem 2rem;
+
+  .faq-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    background: rgb(61, 44, 0);
+    border-radius: 12px;
+    border: 1px solid rgba(250, 255, 238, 0.12);
+    box-shadow: 0 10px 28px rgba(61, 44, 0, 0.18);
+
+    h3 {
+      font-family: "Playfair Display", serif;
+      color: rgb(250, 255, 238);
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+  }
+
+  .faq-empty {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+
+    .faq-empty-message {
+      margin: 0;
+      font-family: "Playfair Display", serif;
+      color: rgba(250, 255, 238, 0.88);
+      font-size: 1rem;
+    }
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .faq-item {
+    border: 1px solid rgba(250, 255, 238, 0.14);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: background 0.3s ease, border-color 0.3s ease;
+    background: rgba(250, 255, 238, 0.06);
+
+    &.open {
+      background: rgba(250, 255, 238, 0.12);
+      border-color: rgba(250, 255, 238, 0.24);
+
+      .faq-answer {
+        max-height: min(3000px, 120vh);
+      }
+
+      .faq-icon {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  .faq-question {
+    width: 100%;
+    padding: 1.2rem;
+    background: none;
+    border: none;
+    text-align: left;
+    color: rgb(250, 255, 238);
+    font-family: "Playfair Display", serif;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    transition: background 0.3s ease;
+
+    &:hover {
+      background: rgba(250, 255, 238, 0.08);
+    }
+  }
+
+  .faq-icon {
+    flex-shrink: 0;
+    font-size: 1.5rem;
+    color: rgb(250, 255, 238);
+    transition: transform 0.3s ease;
+    opacity: 0.8;
+  }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    background: rgba(0, 0, 0, 0.2);
+
+    .faq-answer-content {
+      padding: 1.2rem;
+      color: rgb(250, 255, 238);
+      font-family: "Playfair Display", serif;
+      line-height: 1.6;
+      opacity: 0.92;
+      white-space: pre-wrap;
+    }
+  }
+
+  .faq-loading,
+  .faq-error {
+    text-align: center;
+    color: rgb(250, 255, 238);
+    padding: 1rem;
+    font-family: "Playfair Display", serif;
+    background: rgba(61, 44, 0, 0.1);
+    border-radius: 4px;
+  }
+
+  .faq-error {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+  }
 }

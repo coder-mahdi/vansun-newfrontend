@@ -29,3 +29,12 @@ export type TattooBookingPayload = {
   email: string;
   style: string;
 };
+
+export type TattooBookingStep1Values = PiercingBookingStep1Values;
+
+export type TattooBookingWizardPayload = TattooBookingStep1Values & {
+  style: string;
+  /** data URL from optional reference upload */
+  designDataUrl: string | null;
+  explanation: string;
+};

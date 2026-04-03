@@ -1,6 +1,9 @@
 import { BookingFAQSection } from "@/components/booking/BookingFAQSection";
+import { BookingRelatedContent } from "@/components/booking/BookingRelatedContent";
 import { JewelryStripSection } from "@/components/booking/JewelryStripSection";
 import { PiercingBookingForm } from "@/components/booking/PiercingBookingForm";
+
+export const revalidate = 300;
 
 export default function BookPiercingPage() {
   return (
@@ -12,7 +15,8 @@ export default function BookPiercingPage() {
           <PiercingBookingForm />
         </div>
       </div>
-      <BookingFAQSection />
+      <BookingFAQSection service="piercing" />
+      <BookingRelatedContent preferCategory="piercing" />
     </>
   );
 }
