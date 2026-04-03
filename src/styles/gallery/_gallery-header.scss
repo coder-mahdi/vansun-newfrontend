@@ -1,2 +1,22 @@
 .gallery-header {
+  max-width: 72rem;
+  margin: 0 auto 1.75rem;
+  text-align: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(61, 44, 0, 0.12);
+
+  @media (min-width: 768px) {
+    margin-bottom: 2rem;
+    padding-bottom: 1.75rem;
+  }
+
+  h1 {
+    margin: 0;
+    font-family: $font-heading;
+    font-size: clamp(2rem, 5.5vw, 3.25rem);
+    font-weight: $font-weight-bold;
+    line-height: $line-height-tight;
+    letter-spacing: -0.02em;
+    color: $color-primary;
+  }
 }

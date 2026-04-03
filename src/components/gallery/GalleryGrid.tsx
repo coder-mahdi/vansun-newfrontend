@@ -1,21 +1,36 @@
-import { galleryItems } from "@/data/gallery";
 import { cn } from "@/lib/helpers";
+import type { GalleryCategory, GalleryItem } from "@/types/gallery";
 import { GalleryCard } from "./GalleryCard";
 
 type GalleryGridProps = {
-  category?: "piercing" | "tattoo";
+  items: GalleryItem[];
+  category?: GalleryCategory;
+  /** When set, show items in any of these categories (overrides `category`). */
+  categories?: GalleryCategory[];
   className?: string;
 };
 
-export function GalleryGrid({ category, className }: GalleryGridProps) {
-  const items = category
-    ? galleryItems.filter((i) => i.category === category)
-    : galleryItems;
+export function GalleryGrid({
+  items,
+  category,
+  categories,
+  className,
+}: GalleryGridProps) {
+  const list =
+    categories && categories.length > 0
+      ? items.filter((i) => categories.includes(i.category))
+      : category
+        ? items.filter((i) => i.category === category)
+        : items;
   return (
     <div className={cn("gallery-grid", className)}>
-      {items.map((item) => (
-        <GalleryCard key={item.id} item={item} />
-      ))}
+      {list.length === 0 ? (
+        <p className="gallery-grid__empty">
+          No photos in this gallery yet. Check back soon.
+        </p>
+      ) : (
+        list.map((item) => <GalleryCard key={item.id} item={item} />)
+      )}
     </div>
   );
 }
