@@ -7,6 +7,7 @@ import { cn } from "@/lib/helpers";
 export function ServicesSection({ className }: { className?: string }) {
   return (
     <section
+      id="services"
       className={cn("services", className)}
       aria-labelledby="services-heading"
     >
