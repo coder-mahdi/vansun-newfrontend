@@ -31,4 +31,6 @@ export type BlogVideo = {
   keyword: string;
   /** Resolved 11-char id for youtube-nocookie embed. */
   youtubeId: string;
+  /** When set, booking pages can prefer tattoo vs piercing clips. */
+  category?: BlogCategory;
 };

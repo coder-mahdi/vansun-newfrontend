@@ -117,7 +117,12 @@ function normalizeVideoRow(row: unknown): BlogVideo | null {
   const id =
     String(o.id ?? o.uuid ?? "").trim() ||
     `${ytId}-${title.slice(0, 48).replace(/\s+/g, "-")}`;
-  return { id, title, excerpt, keyword, youtubeId: ytId };
+  const categoryRaw = o.category ?? o.type;
+  const category =
+    categoryRaw === undefined || categoryRaw === null
+      ? undefined
+      : normalizeCategory(categoryRaw);
+  return { id, title, excerpt, keyword, youtubeId: ytId, category };
 }
 
 export async function fetchBlogSummaries(): Promise<BlogSummary[]> {
