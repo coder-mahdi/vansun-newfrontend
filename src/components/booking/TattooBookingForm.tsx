@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
+import { useEffect, useRef, useState } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { tattooStyles } from "@/data/booking";
 import { cn } from "@/lib/helpers";
 import {
@@ -17,12 +17,11 @@ import {
   getBookingV1Base,
   postBookingCreate,
 } from "@/lib/booking-v1";
+import { RECAPTCHA_SITE_KEY } from "@/lib/recaptcha";
 import type {
   TattooBookingStep1Values,
   TattooBookingWizardPayload,
 } from "@/types/booking";
-
-const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "";
 
 function tattooProductId(): number | undefined {
   const raw = process.env.NEXT_PUBLIC_TATTOO_BOOKING_PRODUCT_ID?.trim();
@@ -45,7 +44,7 @@ export function TattooBookingForm({
   onBookingComplete,
 }: TattooBookingFormProps) {
   const router = useRouter();
-  const recaptchaRef = useRef<ReCAPTCHA | null>(null);
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [phase, setPhase] = useState<"wizard" | "success">("wizard");
@@ -62,7 +61,6 @@ export function TattooBookingForm({
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const [availableDates, setAvailableDates] = useState<
     { date: string; day: string }[]
@@ -149,10 +147,6 @@ export function TattooBookingForm({
     };
   }, [date, scheduleDevMock, apiConfigured]);
 
-  const handleRecaptchaChange = useCallback((token: string | null) => {
-    setRecaptchaToken(token);
-  }, []);
-
   const handleDesignUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -179,7 +173,6 @@ export function TattooBookingForm({
       return;
     }
     if (!termsAccepted) return;
-    if (RECAPTCHA_SITE_KEY && !recaptchaToken) return;
 
     const payload: TattooBookingStep1Values = {
       fullName: fullName.trim(),
@@ -188,7 +181,7 @@ export function TattooBookingForm({
       date,
       time,
       termsAccepted,
-      recaptchaToken,
+      recaptchaToken: null,
     };
     setStep1(payload);
     onStep1Continue?.(payload);
@@ -204,6 +197,22 @@ export function TattooBookingForm({
     if (!step1 || !tattooStyle) return;
     setSubmitError(null);
     setSubmitting(true);
+
+    let recaptchaToken: string | null = null;
+    if (RECAPTCHA_SITE_KEY && executeRecaptcha) {
+      try {
+        recaptchaToken = await executeRecaptcha("booking_tattoo");
+      } catch {
+        setSubmitError("Could not verify reCAPTCHA. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+      if (!recaptchaToken) {
+        setSubmitError("Could not verify reCAPTCHA. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+    }
 
     const wizardPayload: TattooBookingWizardPayload = {
       ...step1,
@@ -225,7 +234,7 @@ export function TattooBookingForm({
     };
     if (design) body.design = design;
     if (explanation.trim()) body.explanation = explanation.trim();
-    if (step1.recaptchaToken) body.recaptcha_token = step1.recaptchaToken;
+    if (recaptchaToken) body.recaptcha_token = recaptchaToken;
     if (productId !== undefined) body.product_id = productId;
 
     try {
@@ -469,15 +478,6 @@ export function TattooBookingForm({
           </div>
 
           <div className="recaptcha-terms-row">
-            {RECAPTCHA_SITE_KEY ? (
-              <div className="recaptcha-container">
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey={RECAPTCHA_SITE_KEY}
-                  onChange={handleRecaptchaChange}
-                />
-              </div>
-            ) : null}
             <div className="terms-checkbox">
               <label className="terms-checkbox-label">
                 <input

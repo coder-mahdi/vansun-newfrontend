@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
+import { useEffect, useMemo, useState } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import {
   PIERCING_AFTERCARE_KIT_PRICE_CAD,
   getPiercingJewelry,
@@ -21,12 +21,11 @@ import {
   getBookingV1Base,
   postBookingCreate,
 } from "@/lib/booking-v1";
+import { RECAPTCHA_SITE_KEY } from "@/lib/recaptcha";
 import type {
   PiercingBookingStep1Values,
   PiercingBookingWizardPayload,
 } from "@/types/booking";
-
-const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "";
 
 function formatCad(value: number): string {
   return new Intl.NumberFormat("en-CA", {
@@ -56,7 +55,7 @@ export function PiercingBookingForm({
   onBookingComplete,
 }: PiercingBookingFormProps) {
   const router = useRouter();
-  const recaptchaRef = useRef<ReCAPTCHA | null>(null);
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [phase, setPhase] = useState<"wizard" | "success">("wizard");
   const [step, setStep] = useState<WizardStep>(1);
@@ -73,7 +72,6 @@ export function PiercingBookingForm({
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const [availableDates, setAvailableDates] = useState<
     { date: string; day: string }[]
@@ -177,10 +175,6 @@ export function PiercingBookingForm({
     };
   }, [date, scheduleDevMock, apiConfigured]);
 
-  const handleRecaptchaChange = useCallback((token: string | null) => {
-    setRecaptchaToken(token);
-  }, []);
-
   const goBack = () => {
     setSubmitError(null);
     if (step > 1) {
@@ -194,7 +188,6 @@ export function PiercingBookingForm({
       return;
     }
     if (!termsAccepted) return;
-    if (RECAPTCHA_SITE_KEY && !recaptchaToken) return;
 
     const payload: PiercingBookingStep1Values = {
       fullName: fullName.trim(),
@@ -203,7 +196,7 @@ export function PiercingBookingForm({
       date,
       time,
       termsAccepted,
-      recaptchaToken,
+      recaptchaToken: null,
     };
     setStep1(payload);
     onStep1Continue?.(payload);
@@ -225,6 +218,22 @@ export function PiercingBookingForm({
     if (!step1 || !piercingTypeId || !jewelryId) return;
     setSubmitError(null);
     setSubmitting(true);
+
+    let recaptchaToken: string | null = null;
+    if (RECAPTCHA_SITE_KEY && executeRecaptcha) {
+      try {
+        recaptchaToken = await executeRecaptcha("booking_piercing");
+      } catch {
+        setSubmitError("Could not verify reCAPTCHA. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+      if (!recaptchaToken) {
+        setSubmitError("Could not verify reCAPTCHA. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+    }
 
     const totalCad = totals.totalCad;
     const wizardPayload: PiercingBookingWizardPayload = {
@@ -251,8 +260,8 @@ export function PiercingBookingForm({
       notes: notes.trim() || undefined,
       estimated_total_cad: totalCad,
     };
-    if (step1.recaptchaToken) {
-      body.recaptcha_token = step1.recaptchaToken;
+    if (recaptchaToken) {
+      body.recaptcha_token = recaptchaToken;
     }
     if (productId !== undefined) {
       body.product_id = productId;
@@ -453,15 +462,6 @@ export function PiercingBookingForm({
           </div>
 
           <div className="recaptcha-terms-row">
-            {RECAPTCHA_SITE_KEY ? (
-              <div className="recaptcha-container">
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey={RECAPTCHA_SITE_KEY}
-                  onChange={handleRecaptchaChange}
-                />
-              </div>
-            ) : null}
             <div className="terms-checkbox">
               <label className="terms-checkbox-label">
                 <input
