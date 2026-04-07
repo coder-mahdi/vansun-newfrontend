@@ -51,7 +51,7 @@
     grid-column: 3;
   }
 
-  // —— Mobile top bar (logo + hamburger)
+  // Mobile top bar (logo + hamburger)
   &__bar--mobile {
     display: none;
 
@@ -75,7 +75,7 @@
     }
   }
 
-  // —— Hamburger
+  // Hamburger
   &__hamburger {
     display: none;
     flex-direction: column;
@@ -117,7 +117,7 @@
     }
   }
 
-  // —— Fullscreen mobile menu
+  // Fullscreen mobile menu
   &__overlay {
     @media (min-width: $breakpoint-md) {
       display: none !important;

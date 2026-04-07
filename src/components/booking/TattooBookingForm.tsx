@@ -511,7 +511,7 @@ export function TattooBookingForm({
         <div className="booking-wizard__panel">
           <h2 className="booking-wizard__heading">Tattoo style</h2>
           <p className="booking-wizard__sub">
-            Pick the direction that best matches your idea—we will refine
+            Pick the direction that best matches your idea; we will refine
             details together in the studio.
           </p>
           <div

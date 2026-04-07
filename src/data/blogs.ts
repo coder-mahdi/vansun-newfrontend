@@ -111,7 +111,7 @@ export const mockBlogVideos: BlogVideo[] = [
   {
     id: "mv-4",
     title: "Before your first tattoo",
-    excerpt: "Sleep, food, and ID—quick tips so your session starts smoothly.",
+    excerpt: "Sleep, food, and ID: quick tips so your session starts smoothly.",
     keyword: "first tattoo",
     youtubeId: "dQw4w9WgXcQ",
     category: "tattoo",

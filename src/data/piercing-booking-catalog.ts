@@ -1,5 +1,5 @@
 /**
- * Piercing booking catalog — mock by default.
+ * Piercing booking catalog: mock by default.
  * Replace with CMS/API fetch when `NEXT_PUBLIC_CONTENT_MODE=live` and endpoints exist.
  */
 
@@ -57,7 +57,7 @@ export const piercingBookingCategories: PiercingTypeCategory[] = [
   {
     id: "body",
     label: "Body",
-    description: "Navel and select surface work — final jewelry in-studio.",
+    description: "Navel and select surface work; final jewelry in-studio.",
     serviceFeeCad: 55,
     jewelry: [
       { id: "body-navel-ti", label: "Titanium curved bar (navel)", priceCad: 45 },
