@@ -1,4 +1,4 @@
-// Component styles — one import chain; consumed only from globals.scss
+// Component styles: one import chain; consumed only from globals.scss
 
 @import "about/about-hero";
 @import "about/piercing-room-section";
@@ -11,6 +11,8 @@
 @import "blogs/blog-hero";
 @import "blogs/blogs-page";
 @import "blogs/related-blogs-section";
+
+@import "consent/consent-form";
 
 @import "booking/book-page";
 @import "booking/booking-faq-section";

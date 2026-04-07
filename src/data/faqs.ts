@@ -5,7 +5,7 @@ export const mockBookingFaqsPiercing: FAQ[] = [
     id: "piercing-age-id",
     question: "Do I need ID for a piercing appointment?",
     answer:
-      "Yes. Please bring government-issued photo ID. For minors, we follow studio policy and provincial requirements—contact us before booking if you are under 18.",
+      "Yes. Please bring government-issued photo ID. For minors, we follow studio policy and provincial requirements; contact us before booking if you are under 18.",
   },
   {
     id: "piercing-healing",
@@ -26,13 +26,13 @@ export const mockBookingFaqsTattoo: FAQ[] = [
     id: "tattoo-consult",
     question: "Should I book a consult first?",
     answer:
-      "For larger or custom work, a consultation helps align design, placement, and timing. Smaller pieces can often be booked directly—use the booking flow or email us a reference.",
+      "For larger or custom work, a consultation helps align design, placement, and timing. Smaller pieces can often be booked directly; use the booking flow or email us a reference.",
   },
   {
     id: "tattoo-day-of",
     question: "What should I do the day of my tattoo?",
     answer:
-      "Eat a solid meal, stay hydrated, avoid alcohol, and wear comfortable clothing that exposes the area. Arrive on time with clean skin—no numbing creams unless we have agreed otherwise.",
+      "Eat a solid meal, stay hydrated, avoid alcohol, and wear comfortable clothing that exposes the area. Arrive on time with clean skin; no numbing creams unless we have agreed otherwise.",
   },
   {
     id: "tattoo-aftercare",

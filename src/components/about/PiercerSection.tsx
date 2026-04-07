@@ -43,7 +43,7 @@ export function PiercerSection({ className }: { className?: string }) {
                 </div>
                 <blockquote className="piercer-section__quote">
                   <p>&ldquo;{t.quote}&rdquo;</p>
-                  <footer className="piercer-section__cite">— {t.name}</footer>
+                  <footer className="piercer-section__cite">{t.name}</footer>
                 </blockquote>
               </li>
             ))}

@@ -1,6 +1,6 @@
 export const piercingPlacements: string[] = [];
 
-/** Tattoo booking step — style preference (extend via CMS later). */
+/** Tattoo booking step: style preference (extend via CMS later). */
 export const tattooStyles: string[] = [
   "Fine line",
   "Blackwork",
@@ -8,5 +8,5 @@ export const tattooStyles: string[] = [
   "Japanese",
   "Realism",
   "Minimal / lettering",
-  "Custom — not sure yet",
+  "Custom, not sure yet",
 ];

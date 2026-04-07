@@ -3,7 +3,7 @@ import { devCmsAsset } from "@/lib/content-assets";
 export const jewelryGalleryTitle = "Jewelry gallery";
 
 export const jewelryGalleryIntro =
-  "Every piece we use and sell is implant-grade titanium—safe for healing, durable, and nickel-free.";
+  "Every piece we use and sell is implant-grade titanium, safe for healing, durable, and nickel-free.";
 
 export type JewelryGallerySlide = {
   source_url: string;

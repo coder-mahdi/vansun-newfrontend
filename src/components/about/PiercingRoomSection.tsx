@@ -30,7 +30,7 @@ export function PiercingRoomSection({ className }: { className?: string }) {
               <div className="piercing-room-section__frame">
                 <Image
                   src={src}
-                  alt={`${piercingRoomTitle} — photo ${i + 1}`}
+                  alt={`${piercingRoomTitle}, photo ${i + 1}`}
                   fill
                   className="piercing-room-section__img"
                   sizes="(min-width: 1023px) 22vw, (min-width: 600px) 45vw, 100vw"

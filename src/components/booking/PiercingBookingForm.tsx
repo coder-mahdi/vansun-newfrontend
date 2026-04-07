@@ -676,7 +676,7 @@ export function PiercingBookingForm({
               />
               <span>
                 Add aftercare kit ({formatCad(PIERCING_AFTERCARE_KIT_PRICE_CAD)}
-                ) — saline, instructions, and essentials for healing.
+                ): saline, instructions, and essentials for healing.
               </span>
             </label>
           </div>

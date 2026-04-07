@@ -1,7 +1,7 @@
 /**
  * Gallery items from `NEXT_PUBLIC_API_URL` (JSON).
  *
- * **GET /gallery/items** — array or `{ items: [...] }` / `{ data: [...] }`
+ * **GET /gallery/items**: array or `{ items: [...] }` / `{ data: [...] }`
  * Each item: `id`, `title`, `category` (`tattoo` | `piercing` | `jewelry`),
  * `imageSrc` | `image_url` | `imageUrl`, `imageAlt` | `image_alt` | `alt`.
  */

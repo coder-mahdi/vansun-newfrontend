@@ -1,5 +1,5 @@
 /**
- * Vansun custom WP REST namespace (v1) — shop schedule & booking.
+ * Vansun custom WP REST namespace (v1): shop schedule & booking.
  * Set NEXT_PUBLIC_BOOKING_API_URL to the full base, e.g.
  * https://example.com/cms/wp-json/vansunstudio/v1
  * If unset, falls back to NEXT_PUBLIC_CMS_API_URL + /wp-json/vansunstudio/v1
@@ -73,7 +73,7 @@ export type BookingCreateResponse = {
 };
 
 /**
- * POST /booking/create — legacy endpoint; extra piercing fields may be ignored until the API supports them.
+ * POST /booking/create: legacy endpoint; extra piercing fields may be ignored until the API supports them.
  */
 export async function postBookingCreate(
   body: Record<string, unknown>
