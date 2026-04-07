@@ -55,5 +55,7 @@ export type TattooConsentSubmitBody = {
 
 export type ConsentSubmitResponse = {
   success?: boolean;
+  /** WordPress REST returns created row id on success */
+  id?: number;
   message?: string;
 };

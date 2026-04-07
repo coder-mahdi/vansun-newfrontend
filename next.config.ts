@@ -6,6 +6,7 @@ function remotePatternsFromEnv(): NonNullable<
 > {
   const raw = [
     process.env.NEXT_PUBLIC_API_URL,
+    process.env.NEXT_PUBLIC_CONSENT_API_URL,
     process.env.NEXT_PUBLIC_CMS_API_URL,
   ].filter(Boolean) as string[];
   const seen = new Set<string>();
