@@ -1,0 +1,15 @@
+.gallery-page {
+  background: linear-gradient(
+    180deg,
+    $color-surface-blog 0%,
+    rgba(250, 255, 238, 0.55) 40%,
+    $color-bg-light 100%
+  );
+  color: $color-primary;
+  padding: 2rem 1.25rem 4rem;
+  min-height: min(70vh, 900px);
+
+  @media (min-width: 768px) {
+    padding: 2.5rem 2rem 5rem;
+  }
+}

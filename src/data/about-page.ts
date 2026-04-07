@@ -37,7 +37,7 @@ export const piercingRoomImageUrls = [
 export const piercerSectionTitle = "Your piercer";
 
 export const piercerSectionBody = [
-  "Our piercer brings years of hands-on experience and ongoing training. You’ll get clear guidance on placement, jewelry options, and healing—never rushed, always professional.",
+  "Our piercer brings years of hands-on experience and ongoing training. You’ll get clear guidance on placement, jewelry options, and healing, never rushed, always professional.",
   "We’ve worked with every kind of client and anatomy, from first-time piercings to advanced projects. The goal is always the same: safe procedure, beautiful result, and honest aftercare advice.",
 ];
 
@@ -62,7 +62,7 @@ export const aboutTestimonials: AboutTestimonial[] = [
   {
     id: "2",
     quote:
-      "Best piercing experience I’ve had in Vancouver. Clear communication and the room looked like a medical-grade setup—in a good way.",
+      "Best piercing experience I’ve had in Vancouver. Clear communication and the room looked like a medical-grade setup, in a good way.",
     name: "Jordan K.",
     localImage: "testimonial-2.jpg",
     cmsImage: cms.testimonials[1],
@@ -94,5 +94,5 @@ export const bookingNoticeTitle = "Walk-ins & appointments";
 
 export const bookingNoticeBody = [
   "Walk-ins are welcome when we have availability, but booking ahead is always the easiest way to secure your time.",
-  "Whenever you visit—especially with a booking—please plan for a short wait of a few minutes while we set up your station and run sterilization for tools and jewelry. We never rush this step; it’s part of keeping everyone safe.",
+  "Whenever you visit, especially with a booking, please plan for a short wait of a few minutes while we set up your station and run sterilization for tools and jewelry. We never rush this step; it’s part of keeping everyone safe.",
 ];

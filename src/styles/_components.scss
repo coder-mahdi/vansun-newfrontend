@@ -1,4 +1,4 @@
-// Component styles — one import chain; consumed only from globals.scss
+// Component styles: one import chain; consumed only from globals.scss
 
 @import "about/about-hero";
 @import "about/piercing-room-section";
@@ -12,14 +12,20 @@
 @import "blogs/blogs-page";
 @import "blogs/related-blogs-section";
 
+@import "consent/consent-form";
+
+@import "booking/book-page";
 @import "booking/booking-faq-section";
+@import "booking/booking-related";
+@import "booking/booking-shell";
 @import "booking/jewelry-strip-section";
-@import "booking/piercing-booking-form";
+@import "booking/piercing-wizard";
 @import "booking/placement-selector";
 @import "booking/tattoo-booking-form";
 @import "booking/tattoo-reference-strip-section";
 @import "booking/tattoo-style-selector";
 
+@import "gallery/gallery-page";
 @import "gallery/gallery-card";
 @import "gallery/gallery-grid";
 @import "gallery/gallery-header";

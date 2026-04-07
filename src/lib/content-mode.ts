@@ -2,7 +2,7 @@
  * Content source: live CMS/API vs local mock (dev).
  *
  * Production: set NEXT_PUBLIC_CONTENT_MODE=live and wire real API/CMS URLs.
- * Local testing: omit or use mock — use files under `public/dev-cms/`.
+ * Local testing: omit or use mock; use files under `public/dev-cms/`.
  */
 export type ContentMode = "mock" | "live";
 

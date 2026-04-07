@@ -90,6 +90,7 @@ export const mockBlogVideos: BlogVideo[] = [
     excerpt: "A walkthrough of how we prep the room and sterilize jewellery before your appointment.",
     keyword: "piercing",
     youtubeId: "jNQXAC9IVRw",
+    category: "piercing",
   },
   {
     id: "mv-2",
@@ -97,6 +98,7 @@ export const mockBlogVideos: BlogVideo[] = [
     excerpt: "What to expect in the first seven days and what to avoid while your piece settles.",
     keyword: "aftercare",
     youtubeId: "dQw4w9WgXcQ",
+    category: "tattoo",
   },
   {
     id: "mv-3",
@@ -104,13 +106,15 @@ export const mockBlogVideos: BlogVideo[] = [
     excerpt: "Materials we trust for initial piercings and why it matters for healing.",
     keyword: "jewelry",
     youtubeId: "jNQXAC9IVRw",
+    category: "piercing",
   },
   {
     id: "mv-4",
     title: "Before your first tattoo",
-    excerpt: "Sleep, food, and ID—quick tips so your session starts smoothly.",
+    excerpt: "Sleep, food, and ID: quick tips so your session starts smoothly.",
     keyword: "first tattoo",
     youtubeId: "dQw4w9WgXcQ",
+    category: "tattoo",
   },
   {
     id: "mv-5",
@@ -118,6 +122,7 @@ export const mockBlogVideos: BlogVideo[] = [
     excerpt: "Answers to the questions we hear most about showers, sports, and sun.",
     keyword: "faq",
     youtubeId: "jNQXAC9IVRw",
+    category: "tattoo",
   },
   {
     id: "mv-6",
@@ -125,6 +130,7 @@ export const mockBlogVideos: BlogVideo[] = [
     excerpt: "Parking, transit, and how to find our door on Granville.",
     keyword: "vancouver",
     youtubeId: "dQw4w9WgXcQ",
+    category: "tattoo",
   },
 ];
 

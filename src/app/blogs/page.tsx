@@ -6,7 +6,7 @@ import { fetchBlogSummaries, fetchBlogVideos } from "@/lib/blog-api";
 export const metadata: Metadata = {
   title: "Vansun Blog",
   description:
-    "Articles and videos from Vansun — tattoo, piercing, aftercare, and studio updates.",
+    "Articles and videos from Vansun: tattoo, piercing, aftercare, and studio updates.",
 };
 
 export default async function BlogsPage() {

@@ -1,18 +1,25 @@
-import { Accordion } from "@/components/ui/Accordion";
 import { cn } from "@/lib/helpers";
-import { bookingFaqs } from "@/data/faqs";
+import { fetchBookingFaqs } from "@/lib/faq-api";
+import type { BookingFaqService } from "@/lib/faq-api";
+import { BookingFaqAccordion } from "./BookingFaqAccordion";
 
-export function BookingFAQSection({ className }: { className?: string }) {
+type BookingFAQSectionProps = {
+  service: BookingFaqService;
+  className?: string;
+};
+
+export async function BookingFAQSection({
+  service,
+  className,
+}: BookingFAQSectionProps) {
+  const items = await fetchBookingFaqs(service);
+
   return (
-    <section className={cn("booking-faq-section", className)} aria-labelledby="booking-faq-heading">
-      <h2 id="booking-faq-heading">FAQ</h2>
-      <Accordion
-        items={bookingFaqs.map((f) => ({
-          id: f.id,
-          title: f.question,
-          content: f.answer,
-        }))}
-      />
+    <section
+      className={cn("booking-faq-section", className)}
+      aria-labelledby="booking-faq-heading"
+    >
+      <BookingFaqAccordion items={items} title="FAQ" />
     </section>
   );
 }

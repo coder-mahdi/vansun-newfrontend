@@ -7,6 +7,7 @@ import { cn } from "@/lib/helpers";
 export function ServicesSection({ className }: { className?: string }) {
   return (
     <section
+      id="services"
       className={cn("services", className)}
       aria-labelledby="services-heading"
     >
@@ -28,6 +29,11 @@ export function ServicesSection({ className }: { className?: string }) {
               <Link className="btn-book" href={item.bookHref}>
                 {item.bookLabel}
               </Link>
+              {item.galleryLinks?.map((g) => (
+                <Link key={g.href} className="btn-gallery" href={g.href}>
+                  {g.label}
+                </Link>
+              ))}
             </div>
           </article>
         ))}

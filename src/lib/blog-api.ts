@@ -3,13 +3,13 @@
  *
  * Expected shapes (adjust paths or mappers when your backend differs):
  *
- * **GET /blogs** — array or `{ posts: [...] }` or `{ data: [...] }`
+ * **GET /blogs**: array or `{ posts: [...] }` or `{ data: [...] }`
  * Each item: `slug`, `title`, `excerpt` | `summary`, `publishedAt` | `published_at`,
  * `category` (`tattoo` | `piercing`), `keyword`, optional `coverImageUrl` | `cover_image_url`.
  *
- * **GET /blogs/{slug}** — object or `{ post: {...} }` with same fields plus `content` | `body` | `html`.
+ * **GET /blogs/{slug}**: object or `{ post: {...} }` with same fields plus `content` | `body` | `html`.
  *
- * **GET /blog-videos** — array or `{ videos: [...] }`; each: `id`, `title`, `excerpt` | `description`,
+ * **GET /blog-videos**: array or `{ videos: [...] }`; each: `id`, `title`, `excerpt` | `description`,
  * `keyword`, `youtubeId` | `youtube_id` | `youtubeUrl` | `youtube_url`.
  */
 import {
@@ -117,7 +117,12 @@ function normalizeVideoRow(row: unknown): BlogVideo | null {
   const id =
     String(o.id ?? o.uuid ?? "").trim() ||
     `${ytId}-${title.slice(0, 48).replace(/\s+/g, "-")}`;
-  return { id, title, excerpt, keyword, youtubeId: ytId };
+  const categoryRaw = o.category ?? o.type;
+  const category =
+    categoryRaw === undefined || categoryRaw === null
+      ? undefined
+      : normalizeCategory(categoryRaw);
+  return { id, title, excerpt, keyword, youtubeId: ytId, category };
 }
 
 export async function fetchBlogSummaries(): Promise<BlogSummary[]> {
