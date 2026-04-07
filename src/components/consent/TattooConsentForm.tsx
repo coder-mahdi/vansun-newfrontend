@@ -1,17 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useRef, useState } from "react";
-import ReCAPTCHA from "react-google-recaptcha";
+import { useState } from "react";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import {
   tattooConsentFinalCheckboxes,
   tattooConsentMainAcknowledgements,
 } from "@/data/tattoo-consent-copy";
 import { submitTattooConsent } from "@/lib/consent-api";
 import { cn } from "@/lib/helpers";
+import { RECAPTCHA_SITE_KEY } from "@/lib/recaptcha";
 import type { TattooConsentSubmitBody } from "@/types/consent";
-
-const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "";
 
 const ACK_COUNT = tattooConsentMainAcknowledgements.length;
 
@@ -20,7 +19,7 @@ type TattooConsentFormProps = {
 };
 
 export function TattooConsentForm({ className }: TattooConsentFormProps) {
-  const recaptchaRef = useRef<ReCAPTCHA | null>(null);
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -35,15 +34,10 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
   const [termsPrivacy, setTermsPrivacy] = useState(false);
 
   const [initials, setInitials] = useState("");
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
-  const handleRecaptchaChange = useCallback((token: string | null) => {
-    setRecaptchaToken(token);
-  }, []);
 
   const setAckAt = (index: number, value: boolean) => {
     setAck((prev) => {
@@ -53,7 +47,9 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
     });
   };
 
-  const buildBody = (): TattooConsentSubmitBody => ({
+  const buildBody = (
+    recaptchaToken?: string | null
+  ): TattooConsentSubmitBody => ({
     service: "tattoo",
     full_name: fullName.trim(),
     email: email.trim(),
@@ -79,6 +75,7 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
     recaptcha_token: recaptchaToken ?? undefined,
   });
 
+
   const validate = (): string | null => {
     if (!fullName.trim()) return "Please enter your full name.";
     if (!email.trim()) return "Please enter your email.";
@@ -90,7 +87,6 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
     if (!termsPrivacy) return "Please accept the Terms & Conditions and Privacy Policy.";
     if (!initials.trim()) return "Please enter your initials.";
     if (initials.trim().length < 2) return "Initials must be at least 2 characters.";
-    if (RECAPTCHA_SITE_KEY && !recaptchaToken) return "Please complete the reCAPTCHA.";
     return null;
   };
 
@@ -102,14 +98,26 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
       setError(v);
       return;
     }
+    let recaptchaToken: string | null = null;
+    if (RECAPTCHA_SITE_KEY && executeRecaptcha) {
+      try {
+        recaptchaToken = await executeRecaptcha("consent_tattoo");
+      } catch {
+        setError("Could not verify reCAPTCHA. Please try again.");
+        return;
+      }
+      if (!recaptchaToken) {
+        setError("Could not verify reCAPTCHA. Please try again.");
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
-      await submitTattooConsent(buildBody());
+      await submitTattooConsent(buildBody(recaptchaToken));
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Submission failed.");
-      recaptchaRef.current?.reset();
-      setRecaptchaToken(null);
     } finally {
       setSubmitting(false);
     }
@@ -265,16 +273,6 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
           onChange={(e) => setInitials(e.target.value)}
         />
       </div>
-
-      {RECAPTCHA_SITE_KEY ? (
-        <div className="recaptcha-container">
-          <ReCAPTCHA
-            ref={recaptchaRef}
-            sitekey={RECAPTCHA_SITE_KEY}
-            onChange={handleRecaptchaChange}
-          />
-        </div>
-      ) : null}
 
       {error ? <div className="error-message">{error}</div> : null}
 
