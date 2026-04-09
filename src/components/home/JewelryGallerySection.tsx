@@ -3,11 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
-import {
-  getJewelryGallerySlides,
-  jewelryGalleryIntro,
-  jewelryGalleryTitle,
-} from "@/data/home-jewelry-gallery";
+import type { JewelryGallerySlide } from "@/data/home-jewelry-gallery";
 import { cn } from "@/lib/helpers";
 
 function approxSlideWidth(viewportWidth: number): number {
@@ -18,7 +14,7 @@ function approxSlideWidth(viewportWidth: number): number {
 }
 
 function buildMarqueeSlides(
-  slides: ReturnType<typeof getJewelryGallerySlides>,
+  slides: JewelryGallerySlide[],
   viewportWidth: number
 ) {
   if (slides.length === 0) return [];
@@ -29,8 +25,18 @@ function buildMarqueeSlides(
   return [...half, ...half];
 }
 
-export function JewelryGallerySection({ className }: { className?: string }) {
-  const baseSlides = useMemo(() => getJewelryGallerySlides(), []);
+export function JewelryGallerySection({
+  className,
+  title,
+  intro,
+  slides,
+}: {
+  className?: string;
+  title: string;
+  intro: string;
+  slides: JewelryGallerySlide[];
+}) {
+  const baseSlides = useMemo(() => slides, [slides]);
   const [viewportWidth, setViewportWidth] = useState(1200);
 
   useEffect(() => {
@@ -53,9 +59,9 @@ export function JewelryGallerySection({ className }: { className?: string }) {
       aria-labelledby="jewelry-gallery-heading"
     >
       <h2 id="jewelry-gallery-heading" className="jewelry-gallery-section__bar">
-        {jewelryGalleryTitle}
+        {title}
       </h2>
-      <p className="jewelry-gallery-section__intro">{jewelryGalleryIntro}</p>
+      <p className="jewelry-gallery-section__intro">{intro}</p>
       <div className="jewelry-gallery-section__marquee">
         <div className="jewelry-gallery-section__track">
           {marqueeSlides.map((slide, index) => (

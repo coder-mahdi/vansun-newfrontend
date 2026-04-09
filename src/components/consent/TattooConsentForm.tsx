@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { ConsentFormSuccessPanel } from "@/components/consent/ConsentFormSuccessPanel";
 import {
   tattooConsentFinalCheckboxes,
   tattooConsentMainAcknowledgements,
@@ -123,16 +124,28 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
     }
   };
 
+  const fillSameFormAgain = () => {
+    setSuccess(false);
+    setError(null);
+    setFullName("");
+    setEmail("");
+    setPhone("");
+    setDateOfBirth("");
+    setAck(Array.from({ length: ACK_COUNT }, () => false));
+    setFinalReadVoluntary(false);
+    setFinalDeclare(false);
+    setTermsPrivacy(false);
+    setInitials("");
+  };
+
   if (success) {
     return (
       <div className={cn("consent-form-container", className)}>
-        <div className="success-message">
-          <h3>Thank you</h3>
-          <p>Your tattoo consent has been submitted.</p>
-          <Link href="/" className="home-button">
-            Back to home
-          </Link>
-        </div>
+        <ConsentFormSuccessPanel
+          currentService="tattoo"
+          bodyText="Your tattoo consent has been submitted."
+          onFillSameAgain={fillSameFormAgain}
+        />
       </div>
     );
   }

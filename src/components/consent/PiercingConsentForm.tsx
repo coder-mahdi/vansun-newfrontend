@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { ConsentFormSuccessPanel } from "@/components/consent/ConsentFormSuccessPanel";
 import {
   piercingConsentFinalCheckboxes,
   piercingConsentMainAcknowledgements,
@@ -128,16 +129,30 @@ export function PiercingConsentForm({ className }: PiercingConsentFormProps) {
     }
   };
 
+  const fillSameFormAgain = () => {
+    setSuccess(false);
+    setError(null);
+    setFullName("");
+    setEmail("");
+    setPhone("");
+    setDateOfBirth("");
+    setAck(Array.from({ length: ACK_COUNT }, () => false));
+    setNoClientCompanionMedia(false);
+    setReleaseLiability(false);
+    setFinalReadVoluntary(false);
+    setFinalDeclare(false);
+    setTermsPrivacy(false);
+    setInitials("");
+  };
+
   if (success) {
     return (
       <div className={cn("consent-form-container", className)}>
-        <div className="success-message">
-          <h3>Thank you</h3>
-          <p>Your piercing consent has been submitted.</p>
-          <Link href="/" className="home-button">
-            Back to home
-          </Link>
-        </div>
+        <ConsentFormSuccessPanel
+          currentService="piercing"
+          bodyText="Your piercing consent has been submitted."
+          onFillSameAgain={fillSameFormAgain}
+        />
       </div>
     );
   }
