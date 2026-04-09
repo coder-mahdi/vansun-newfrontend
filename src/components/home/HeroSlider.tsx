@@ -2,30 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { Loader } from "@/components/ui/Loader";
-import {
-  fetchWpMedia,
-  fetchWpPageBySlug,
-  getCmsApiOrigin,
-  type HeroAcfBlock,
-  type WpMedia,
-} from "@/lib/cms-wordpress";
-import { isLiveContentMode } from "@/lib/content-mode";
+import type { HomeHeroPayload } from "@/lib/home-cms";
+import type { WpMedia } from "@/lib/cms-wordpress";
 import { cn } from "@/lib/helpers";
-import {
-  getMockHeroImages,
-  MOCK_HERO_SUBTITLE,
-  MOCK_HERO_TITLE,
-} from "@/data/home-hero-mock";
-
-const HERO_PAGE_SLUG = "hero-data";
-
-type LoadStatus = "loading" | "ready" | "error";
 
 /** Match `.slider-item` widths in `_hero-section.scss` breakpoints (approximate vw). */
+/** Keep in sync with `.slider-item` width/height in `_hero-section.scss`. */
 function approxHeroSlideWidth(viewportWidth: number): number {
   if (viewportWidth <= 480) return 120;
-  if (viewportWidth <= 767) return 140;
+  if (viewportWidth <= 767) return 160;
   if (viewportWidth <= 1023) return 180;
   return 200;
 }
@@ -43,10 +28,13 @@ function buildMarqueeSlides(images: WpMedia[], viewportWidth: number): WpMedia[]
   return [...half, ...half];
 }
 
-export function HeroSlider({ className }: { className?: string }) {
-  const [heroData, setHeroData] = useState<HeroAcfBlock | null>(null);
-  const [heroImages, setHeroImages] = useState<WpMedia[]>([]);
-  const [status, setStatus] = useState<LoadStatus>("loading");
+export function HeroSlider({
+  className,
+  hero,
+}: {
+  className?: string;
+  hero: HomeHeroPayload;
+}) {
   const [isBlurred, setIsBlurred] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(1200);
 
@@ -60,60 +48,6 @@ export function HeroSlider({ className }: { className?: string }) {
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function fetchHeroData() {
-      const useLiveCms = isLiveContentMode() && Boolean(getCmsApiOrigin());
-
-      if (!useLiveCms) {
-        if (!cancelled) {
-          setHeroData({
-            title: MOCK_HERO_TITLE,
-            subtitle: MOCK_HERO_SUBTITLE,
-          });
-          setHeroImages(getMockHeroImages());
-          setStatus("ready");
-        }
-        return;
-      }
-
-      try {
-        const pageData = await fetchWpPageBySlug(HERO_PAGE_SLUG);
-        const hero = pageData?.acf?.hero;
-        if (!hero || cancelled) {
-          if (!cancelled) setStatus("error");
-          return;
-        }
-
-        const imageIds = hero["hero-image"];
-        let images: WpMedia[] = [];
-        if (imageIds && imageIds.length > 0) {
-          const results = await Promise.all(
-            imageIds.map((id) => fetchWpMedia(id))
-          );
-          images = results.filter(
-            (m): m is WpMedia =>
-              m != null && typeof m.source_url === "string" && m.source_url.length > 0
-          );
-        }
-
-        if (!cancelled) {
-          setHeroData(hero);
-          setHeroImages(images);
-          setStatus(images.length > 0 ? "ready" : "error");
-        }
-      } catch {
-        if (!cancelled) setStatus("error");
-      }
-    }
-
-    void fetchHeroData();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
     function handleScroll() {
       setIsBlurred(window.scrollY > 100);
     }
@@ -123,23 +57,11 @@ export function HeroSlider({ className }: { className?: string }) {
   }, []);
 
   const marqueeSlides = useMemo(
-    () => buildMarqueeSlides(heroImages, viewportWidth),
-    [heroImages, viewportWidth]
+    () => buildMarqueeSlides(hero.images, viewportWidth),
+    [hero.images, viewportWidth]
   );
 
-  if (status === "loading" || !heroData) {
-    return (
-      <section
-        className={cn("hero", "hero-section", "hero--loading", className)}
-        aria-busy="true"
-        aria-label="Hero"
-      >
-        <Loader label="Loading hero" />
-      </section>
-    );
-  }
-
-  if (status === "error" || heroImages.length === 0) {
+  if (hero.images.length === 0) {
     return (
       <section
         className={cn("hero", "hero-section", "hero--empty", className)}
@@ -151,7 +73,7 @@ export function HeroSlider({ className }: { className?: string }) {
     );
   }
 
-  const { title, subtitle } = heroData;
+  const { title, subtitle } = hero;
 
   return (
     <section
@@ -179,8 +101,6 @@ export function HeroSlider({ className }: { className?: string }) {
                     src={image.source_url}
                     alt={altText}
                     loading={index === 0 ? "eager" : "lazy"}
-                    crossOrigin="anonymous"
-                    referrerPolicy="no-referrer"
                   />
                 </div>
               );
