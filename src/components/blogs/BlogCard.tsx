@@ -17,10 +17,11 @@ export function BlogCard({ blog, className }: BlogCardProps) {
           {blog.coverImageUrl ? (
             <Image
               src={blog.coverImageUrl}
-              alt=""
+              alt={blog.title}
               fill
               className="blog-card__img"
               sizes="(min-width: 1023px) 32vw, (min-width: 600px) 45vw, 100vw"
+              unoptimized
             />
           ) : (
             <div className="blog-card__placeholder" aria-hidden />

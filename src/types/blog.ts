@@ -6,8 +6,13 @@ export type BlogSummary = {
   excerpt: string;
   publishedAt: string;
   category: BlogCategory;
-  /** SEO / tag from backend (single keyword or label). */
+  /**
+   * SEO: comma-separated tags from WordPress (`tags` in vansun API), or legacy keyword.
+   * Use `tags` when you need an array for meta keywords.
+   */
   keyword: string;
+  /** WordPress post tags (names), for SEO / meta keywords. */
+  tags?: string[];
   /** Optional cover URL (e.g. from `devCmsAsset` in mock mode). */
   coverImageUrl?: string;
 };
