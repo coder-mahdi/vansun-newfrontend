@@ -38,4 +38,6 @@ export type BlogVideo = {
   youtubeId: string;
   /** When set, booking pages can prefer tattoo vs piercing clips. */
   category?: BlogCategory;
+  /** ISO date string; newest-first on booking “related videos” when set. */
+  publishedAt?: string;
 };

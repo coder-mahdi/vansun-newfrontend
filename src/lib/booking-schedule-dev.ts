@@ -8,8 +8,9 @@ function pad2(n: number): string {
 /**
  * Use fake dates/times so the piercing wizard can be tested without CMS.
  *
- * - `NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE=1`: always use mock slots (even if API URL is set).
- * - Otherwise: only in `NODE_ENV === 'development'` when no booking API base is configured.
+ * - `NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE=1` (or `true`): **always** mock — including production;
+ *   remove this on real deploys or you will always see sample 10:00–17:00 slots.
+ * - Otherwise: only in development when `getBookingV1Base()` is empty (no CMS URL / booking URL).
  */
 export function isBookingScheduleDevMock(): boolean {
   const force =

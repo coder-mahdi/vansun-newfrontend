@@ -429,7 +429,18 @@ function normalizeVideoRow(row: unknown): BlogVideo | null {
     categoryRaw === undefined || categoryRaw === null
       ? categoryFromKeyword(keyword)
       : normalizeCategory(categoryRaw);
-  return { id, title, excerpt, keyword, youtubeId: ytId, category };
+  const publishedAt = String(
+    o.publishedAt ?? o.published_at ?? o.date ?? ""
+  ).trim();
+  return {
+    id,
+    title,
+    excerpt,
+    keyword,
+    youtubeId: ytId,
+    category,
+    ...(publishedAt ? { publishedAt } : {}),
+  };
 }
 
 function rowMatchesSlug(row: unknown, slug: string): boolean {
