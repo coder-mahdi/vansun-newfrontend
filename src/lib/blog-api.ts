@@ -1,29 +1,60 @@
 /**
- * Blog posts and videos from `NEXT_PUBLIC_API_URL` (JSON).
+ * Blog posts and videos from Vansun WordPress REST (`vansun/v1`).
  *
- * Expected shapes (adjust paths or mappers when your backend differs):
+ * Plugin routes:
+ * - GET `/content/blogs`
+ * - GET `/content/videos`
  *
- * **GET /blogs**: array or `{ posts: [...] }` or `{ data: [...] }`
- * Each item: `slug`, `title`, `excerpt` | `summary`, `publishedAt` | `published_at`,
- * `category` (`tattoo` | `piercing`), `keyword`, optional `coverImageUrl` | `cover_image_url`.
- *
- * **GET /blogs/{slug}**: object or `{ post: {...} }` with same fields plus `content` | `body` | `html`.
- *
- * **GET /blog-videos**: array or `{ videos: [...] }`; each: `id`, `title`, `excerpt` | `description`,
- * `keyword`, `youtubeId` | `youtube_id` | `youtubeUrl` | `youtube_url`.
+ * Base URL priority:
+ * - `NEXT_PUBLIC_CONTENT_API_URL` (if set)
+ * - `NEXT_PUBLIC_CONSENT_API_URL` (same WP namespace)
+ * - `NEXT_PUBLIC_API_URL` (legacy fallback)
  */
 import {
   blogPostsBySlug,
   blogSummaries as mockBlogSummaries,
   mockBlogVideos,
 } from "@/data/blogs";
-import { apiGet } from "@/lib/api";
 import { contentImageUrl } from "@/lib/content-assets";
 import { parseYoutubeId } from "@/lib/youtube";
 import type { BlogCategory, BlogPost, BlogSummary, BlogVideo } from "@/types/blog";
 
 function apiBase(): string {
+  const content = process.env.NEXT_PUBLIC_CONTENT_API_URL?.trim();
+  if (content) return content;
+  const wp = process.env.NEXT_PUBLIC_CONSENT_API_URL?.trim();
+  if (wp) return wp;
   return process.env.NEXT_PUBLIC_API_URL?.trim() ?? "";
+}
+
+function trimSlash(url: string): string {
+  return url.replace(/\/+$/, "");
+}
+
+async function contentGet<T>(path: string): Promise<T> {
+  const base = apiBase();
+  const res = await fetch(`${trimSlash(base)}${path}`, {
+    next: { revalidate: 300 },
+  });
+  if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function stripHtml(s: string): string {
+  return s.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function categoryFromKeyword(keyword: string): BlogCategory {
+  const s = keyword.toLowerCase();
+  if (s.includes("pierc")) return "piercing";
+  return "tattoo";
 }
 
 function asArray(payload: unknown): unknown[] {
@@ -49,15 +80,25 @@ function normalizeCategory(raw: unknown): BlogCategory {
 function normalizeBlogSummaryRow(row: unknown): BlogSummary | null {
   if (!row || typeof row !== "object") return null;
   const o = row as Record<string, unknown>;
-  const slug = String(o.slug ?? "").trim();
   const title = String(o.title ?? "").trim();
+  const slugRaw = String(o.slug ?? "").trim();
+  const idRaw = String(o.id ?? "").trim();
+  const slug =
+    slugRaw || (title ? slugify(title) : "") || (idRaw ? `post-${idRaw}` : "");
   if (!slug || !title) return null;
-  const excerpt = String(o.excerpt ?? o.summary ?? "").trim() || title;
+  const excerptSource = String(
+    o.excerpt ?? o.summary ?? o.content ?? o.body ?? o.html ?? ""
+  ).trim();
+  const excerpt = stripHtml(excerptSource).slice(0, 220) || title;
   const publishedAt = String(
     o.publishedAt ?? o.published_at ?? o.date ?? ""
   ).trim();
   const keyword = String(o.keyword ?? o.keywords ?? o.tag ?? "").trim() || "blog";
-  const category = normalizeCategory(o.category ?? o.type);
+  const categoryRaw = o.category ?? o.type;
+  const category =
+    categoryRaw === undefined || categoryRaw === null
+      ? categoryFromKeyword(keyword)
+      : normalizeCategory(categoryRaw);
   const coverRaw =
     (o.coverImageUrl ?? o.cover_image_url ?? o.coverUrl ?? o.image) ?? null;
   const coverStr =
@@ -82,16 +123,7 @@ function normalizeBlogSummaryRow(row: unknown): BlogSummary | null {
   };
 }
 
-function unwrapPostPayload(payload: unknown): unknown {
-  if (!payload || typeof payload !== "object") return payload;
-  const o = payload as Record<string, unknown>;
-  if (o.post && typeof o.post === "object") return o.post;
-  if (o.data && typeof o.data === "object") return o.data;
-  return payload;
-}
-
-function normalizeBlogPostPayload(payload: unknown): BlogPost | null {
-  const row = unwrapPostPayload(payload);
+function normalizeBlogPostPayload(row: unknown): BlogPost | null {
   const base = normalizeBlogSummaryRow(row);
   if (!base) return null;
   if (!row || typeof row !== "object") return null;
@@ -109,7 +141,12 @@ function normalizeVideoRow(row: unknown): BlogVideo | null {
   const excerpt = String(o.excerpt ?? o.description ?? "").trim() || title;
   const keyword = String(o.keyword ?? o.tag ?? "").trim() || "video";
   const rawYt =
-    o.youtubeId ?? o.youtube_id ?? o.youtubeUrl ?? o.youtube_url ?? o.embedUrl;
+    o.youtubeId ??
+    o.youtube_id ??
+    o.youtubeUrl ??
+    o.youtube_url ??
+    o.embedUrl ??
+    o.embed_url;
   const ytId = parseYoutubeId(
     typeof rawYt === "string" ? rawYt : String(rawYt ?? "")
   );
@@ -130,7 +167,7 @@ export async function fetchBlogSummaries(): Promise<BlogSummary[]> {
   if (!base) return [...mockBlogSummaries];
 
   try {
-    const payload = await apiGet<unknown>("/blogs");
+    const payload = await contentGet<unknown>("/content/blogs");
     const rows = asArray(payload);
     const out = rows
       .map(normalizeBlogSummaryRow)
@@ -151,10 +188,13 @@ export async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
   }
 
   try {
-    const payload = await apiGet<unknown>(
-      `/blogs/${encodeURIComponent(slug)}`
-    );
-    const post = normalizeBlogPostPayload(payload);
+    const payload = await contentGet<unknown>("/content/blogs");
+    const rows = asArray(payload);
+    const match = rows.find((row) => {
+      const summary = normalizeBlogSummaryRow(row);
+      return summary?.slug === slug;
+    });
+    const post = normalizeBlogPostPayload(match);
     if (post) return post;
   } catch {
     /* fallback */
@@ -168,7 +208,7 @@ export async function fetchBlogVideos(): Promise<BlogVideo[]> {
   if (!base) return [...mockBlogVideos];
 
   try {
-    const payload = await apiGet<unknown>("/blog-videos");
+    const payload = await contentGet<unknown>("/content/videos");
     const rows = asArray(payload);
     const out = rows
       .map(normalizeVideoRow)
