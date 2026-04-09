@@ -9,18 +9,9 @@ import {
   getPiercingJewelry,
   piercingBookingCategories,
 } from "@/data/piercing-booking-catalog";
+import { useBookingSchedule } from "@/hooks/use-booking-schedule";
 import { cn } from "@/lib/helpers";
-import {
-  getDevMockBookingDates,
-  getDevMockBookingTimeSlots,
-  isBookingScheduleDevMock,
-} from "@/lib/booking-schedule-dev";
-import {
-  fetchAvailableBookingDates,
-  fetchAvailableBookingTimes,
-  getBookingV1Base,
-  postBookingCreate,
-} from "@/lib/booking-v1";
+import { getBookingV1Base, postBookingCreate } from "@/lib/booking-v1";
 import { RECAPTCHA_SITE_KEY } from "@/lib/recaptcha";
 import type {
   PiercingBookingStep1Values,
@@ -73,20 +64,20 @@ export function PiercingBookingForm({
   const [time, setTime] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-  const [availableDates, setAvailableDates] = useState<
-    { date: string; day: string }[]
-  >([]);
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<
-    { time: string; end_time: string }[]
-  >([]);
-  const [datesLoading, setDatesLoading] = useState(false);
-  const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const apiConfigured = getBookingV1Base().length > 0;
-  const scheduleDevMock = isBookingScheduleDevMock();
-  const scheduleUsable = apiConfigured || scheduleDevMock;
+  const {
+    availableDates,
+    availableTimeSlots,
+    datesLoading,
+    timesLoading,
+    scheduleError,
+    scheduleUsable,
+    scheduleDevMock,
+    scheduleMode,
+  } = useBookingSchedule("piercing", date);
 
   const { category, jewelry } = useMemo(
     () => getPiercingJewelry(piercingTypeId, jewelryId),
@@ -106,74 +97,18 @@ export function PiercingBookingForm({
   }, [category, jewelry, aftercareKit]);
 
   useEffect(() => {
-    if (scheduleDevMock) {
-      setAvailableDates(getDevMockBookingDates());
-      setDatesLoading(false);
-      setScheduleError(null);
-      return;
-    }
-    if (!apiConfigured) {
-      setAvailableDates([]);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      setDatesLoading(true);
-      setScheduleError(null);
-      try {
-        const dates = await fetchAvailableBookingDates("piercing");
-        if (!cancelled) setAvailableDates(dates);
-      } catch (e) {
-        if (!cancelled) {
-          setScheduleError(
-            e instanceof Error ? e.message : "Could not load available dates."
-          );
-          setAvailableDates([]);
-        }
-      } finally {
-        if (!cancelled) setDatesLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [scheduleDevMock, apiConfigured]);
-
-  useEffect(() => {
     if (!date) {
-      setAvailableTimeSlots([]);
       setTime("");
       return;
     }
-    if (scheduleDevMock) {
-      setAvailableTimeSlots(getDevMockBookingTimeSlots());
-      setScheduleError(null);
-      return;
-    }
-    if (!apiConfigured) {
-      setAvailableTimeSlots([]);
+    if (
+      time &&
+      !timesLoading &&
+      availableTimeSlots.every((s) => s.time !== time)
+    ) {
       setTime("");
-      return;
     }
-    let cancelled = false;
-    (async () => {
-      setScheduleError(null);
-      try {
-        const times = await fetchAvailableBookingTimes("piercing", date);
-        if (!cancelled) setAvailableTimeSlots(times);
-      } catch (e) {
-        if (!cancelled) {
-          setScheduleError(
-            e instanceof Error ? e.message : "Could not load time slots."
-          );
-          setAvailableTimeSlots([]);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [date, scheduleDevMock, apiConfigured]);
+  }, [date, time, timesLoading, availableTimeSlots]);
 
   const goBack = () => {
     setSubmitError(null);
@@ -411,7 +346,10 @@ export function PiercingBookingForm({
                 id="piercing-date"
                 name="date"
                 value={date}
-                onChange={(ev) => setDate(ev.target.value)}
+                onChange={(ev) => {
+                  setDate(ev.target.value);
+                  setTime("");
+                }}
                 required
                 disabled={!scheduleUsable || datesLoading}
               >
@@ -437,7 +375,9 @@ export function PiercingBookingForm({
               !datesLoading &&
               availableDates.length === 0 ? (
                 <small className="booking-page__config-hint">
-                  No dates returned. Check shop schedule for piercing in the CMS.
+                  {scheduleMode === "working-hours"
+                    ? "No bookable days in the next window — check working hours in the CMS."
+                    : "No dates returned. Check shop schedule for piercing in the CMS."}
                 </small>
               ) : null}
             </div>
@@ -449,9 +389,21 @@ export function PiercingBookingForm({
                 value={time}
                 onChange={(ev) => setTime(ev.target.value)}
                 required
-                disabled={!date || availableTimeSlots.length === 0}
+                disabled={
+                  !date ||
+                  timesLoading ||
+                  (!timesLoading && availableTimeSlots.length === 0)
+                }
               >
-                <option value="">Select a time</option>
+                <option value="">
+                  {!date
+                    ? "Select a date first"
+                    : timesLoading
+                      ? "Loading times…"
+                      : availableTimeSlots.length === 0
+                        ? "No times available"
+                        : "Select a time"}
+                </option>
                 {availableTimeSlots.map((slot) => (
                   <option key={slot.time} value={slot.time}>
                     {slot.time} – {slot.end_time}

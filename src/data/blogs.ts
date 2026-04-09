@@ -91,6 +91,7 @@ export const mockBlogVideos: BlogVideo[] = [
     keyword: "piercing",
     youtubeId: "jNQXAC9IVRw",
     category: "piercing",
+    publishedAt: "2026-03-20",
   },
   {
     id: "mv-2",
@@ -99,6 +100,7 @@ export const mockBlogVideos: BlogVideo[] = [
     keyword: "aftercare",
     youtubeId: "dQw4w9WgXcQ",
     category: "tattoo",
+    publishedAt: "2026-03-18",
   },
   {
     id: "mv-3",
@@ -107,6 +109,7 @@ export const mockBlogVideos: BlogVideo[] = [
     keyword: "jewelry",
     youtubeId: "jNQXAC9IVRw",
     category: "piercing",
+    publishedAt: "2026-02-01",
   },
   {
     id: "mv-4",
@@ -115,6 +118,7 @@ export const mockBlogVideos: BlogVideo[] = [
     keyword: "first tattoo",
     youtubeId: "dQw4w9WgXcQ",
     category: "tattoo",
+    publishedAt: "2026-01-25",
   },
   {
     id: "mv-5",
@@ -123,6 +127,7 @@ export const mockBlogVideos: BlogVideo[] = [
     keyword: "faq",
     youtubeId: "jNQXAC9IVRw",
     category: "tattoo",
+    publishedAt: "2025-12-10",
   },
   {
     id: "mv-6",
@@ -131,6 +136,7 @@ export const mockBlogVideos: BlogVideo[] = [
     keyword: "vancouver",
     youtubeId: "dQw4w9WgXcQ",
     category: "tattoo",
+    publishedAt: "2025-11-05",
   },
 ];
 

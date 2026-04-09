@@ -5,33 +5,36 @@ import { fetchBlogSummaries, fetchBlogVideos } from "@/lib/blog-api";
 import { cn } from "@/lib/helpers";
 import type { BlogCategory, BlogSummary, BlogVideo } from "@/types/blog";
 
+/** Only posts in this category, newest first (booking pages stay on-topic). */
 function pickLatestPostsForBooking(
   posts: BlogSummary[],
-  preferCategory: BlogCategory,
+  category: BlogCategory,
   limit: number
 ): BlogSummary[] {
   const byDate = (a: BlogSummary, b: BlogSummary) =>
     b.publishedAt.localeCompare(a.publishedAt);
-  const preferred = [...posts]
-    .filter((p) => p.category === preferCategory)
-    .sort(byDate);
-  const other = [...posts]
-    .filter((p) => p.category !== preferCategory)
-    .sort(byDate);
-  return [...preferred, ...other].slice(0, limit);
+  return [...posts]
+    .filter((p) => p.category === category)
+    .sort(byDate)
+    .slice(0, limit);
 }
 
+/** Only videos tagged for this category, newest first when `publishedAt` exists. */
 function pickLatestVideosForBooking(
   videos: BlogVideo[],
-  preferCategory: BlogCategory,
+  category: BlogCategory,
   limit: number
 ): BlogVideo[] {
-  const preferred = videos.filter((v) => v.category === preferCategory);
-  const uncategorized = videos.filter((v) => v.category === undefined);
-  const other = videos.filter(
-    (v) => v.category !== undefined && v.category !== preferCategory
-  );
-  return [...preferred, ...uncategorized, ...other].slice(0, limit);
+  const byDate = (a: BlogVideo, b: BlogVideo) => {
+    const ad = a.publishedAt ?? "";
+    const bd = b.publishedAt ?? "";
+    if (ad !== bd) return bd.localeCompare(ad);
+    return b.id.localeCompare(a.id);
+  };
+  return [...videos]
+    .filter((v) => v.category === category)
+    .sort(byDate)
+    .slice(0, limit);
 }
 
 function youtubeThumbUrl(youtubeId: string): string {

@@ -10,7 +10,8 @@
  * **GET /blogs/{slug}**: object or `{ post: {...} }` with same fields plus `content` | `body` | `html`.
  *
  * **GET /blog-videos**: array or `{ videos: [...] }`; each: `id`, `title`, `excerpt` | `description`,
- * `keyword`, `youtubeId` | `youtube_id` | `youtubeUrl` | `youtube_url`.
+ * `keyword`, `category` (`tattoo` | `piercing`), `publishedAt` | `published_at` | `date` (for ordering),
+ * `youtubeId` | `youtube_id` | `youtubeUrl` | `youtube_url`.
  */
 import {
   blogPostsBySlug,
@@ -122,7 +123,18 @@ function normalizeVideoRow(row: unknown): BlogVideo | null {
     categoryRaw === undefined || categoryRaw === null
       ? undefined
       : normalizeCategory(categoryRaw);
-  return { id, title, excerpt, keyword, youtubeId: ytId, category };
+  const publishedAt = String(
+    o.publishedAt ?? o.published_at ?? o.date ?? ""
+  ).trim();
+  return {
+    id,
+    title,
+    excerpt,
+    keyword,
+    youtubeId: ytId,
+    category,
+    ...(publishedAt ? { publishedAt } : {}),
+  };
 }
 
 export async function fetchBlogSummaries(): Promise<BlogSummary[]> {
