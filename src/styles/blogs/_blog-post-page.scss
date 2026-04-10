@@ -1,0 +1,7 @@
+// Single blog article shell (listing uses `.blogs-page`)
+
+.blog-post-page {
+  background-color: $color-surface-blog;
+  color: $color-primary;
+  min-height: 50vh;
+}

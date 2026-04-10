@@ -4,7 +4,26 @@ import Link from "next/link";
 import { homeServices } from "@/data/home-services";
 import { cn } from "@/lib/helpers";
 
-export function ServicesSection({ className }: { className?: string }) {
+export function ServicesSection({
+  className,
+  serviceImages,
+}: {
+  className?: string;
+  serviceImages: {
+    tattoo: { url: string; alt: string };
+    piercing: { url: string; alt: string };
+  };
+}) {
+  const items = homeServices.map((item) => {
+    const key = item.title.toLowerCase() === "tattoo" ? "tattoo" : "piercing";
+    const cms = serviceImages[key];
+    return {
+      ...item,
+      imageUrl: cms.url,
+      imageAlt: cms.alt,
+    };
+  });
+
   return (
     <section
       id="services"
@@ -13,7 +32,7 @@ export function ServicesSection({ className }: { className?: string }) {
     >
       <h2 id="services-heading">Services</h2>
       <div className="services-items-container">
-        {homeServices.map((item) => (
+        {items.map((item) => (
           <article key={item.bookHref} className="services-item">
             <h3>{item.title}</h3>
             <Image

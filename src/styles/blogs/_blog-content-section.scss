@@ -1,7 +1,7 @@
 .blog-content-section {
   max-width: 42rem;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 3rem;
+  padding: 1.75rem 1.25rem 3rem;
   color: $color-primary;
 
   @media (min-width: 768px) {
@@ -13,7 +13,7 @@
     line-height: $line-height-loose;
 
     p {
-      margin: 0 0 1rem;
+      margin: 0 0 1.1rem;
     }
 
     p:last-child {
@@ -21,28 +21,123 @@
     }
 
     h2,
-    h3 {
+    h3,
+    h4 {
       font-family: $font-heading;
-      margin: 1.5rem 0 0.75rem;
+      font-weight: $font-weight-bold;
       line-height: $line-height-heading;
+      color: $color-primary;
+    }
+
+    h2 {
+      font-size: clamp(1.35rem, 3vw, 1.75rem);
+      margin: 2rem 0 0.85rem;
+    }
+
+    h3 {
+      font-size: clamp(1.15rem, 2.5vw, 1.4rem);
+      margin: 1.75rem 0 0.65rem;
+    }
+
+    h4 {
+      font-size: 1.05rem;
+      margin: 1.5rem 0 0.5rem;
     }
 
     ul,
     ol {
-      margin: 0 0 1rem;
-      padding-left: 1.25rem;
+      margin: 0 0 1.1rem;
+      padding-left: 1.35rem;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
     }
 
     a {
       color: $color-primary;
       text-decoration: underline;
       text-underline-offset: 0.2em;
+
+      &:hover {
+        opacity: 0.88;
+      }
+    }
+
+    strong {
+      font-weight: $font-weight-bold;
     }
 
     code {
       font-size: 0.9em;
       padding: 0.1em 0.35em;
       background-color: rgba(61, 44, 0, 0.08);
+      border-radius: 2px;
+    }
+
+    pre {
+      margin: 1.25rem 0;
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      background-color: rgba(61, 44, 0, 0.06);
+      border: 1px solid rgba(61, 44, 0, 0.12);
+    }
+
+    pre code {
+      padding: 0;
+      background: none;
+    }
+
+    blockquote {
+      margin: 1.35rem 0;
+      padding: 0.85rem 1rem 0.85rem 1.1rem;
+      border-left: 3px solid $color-primary;
+      background-color: rgba(61, 44, 0, 0.05);
+      font-style: italic;
+
+      p:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      vertical-align: middle;
+    }
+
+    figure {
+      margin: 1.5rem 0;
+
+      img {
+        display: block;
+        width: 100%;
+      }
+    }
+
+    figcaption {
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+      color: rgba(61, 44, 0, 0.72);
+      line-height: $line-height-base;
+    }
+
+    hr {
+      margin: 2rem 0;
+      border: none;
+      border-top: 1px solid rgba(61, 44, 0, 0.18);
+    }
+
+    // WordPress / Gutenberg common wrappers
+    .wp-block-image,
+    .wp-block-embed {
+      margin: 1.5rem 0;
+    }
+
+    iframe {
+      max-width: 100%;
     }
   }
 }

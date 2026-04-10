@@ -12,9 +12,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await fetchBlogPost(slug);
   if (!post) return { title: "Post" };
+  const keywords = post.tags?.length
+    ? post.tags
+    : post.keyword
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
   return {
     title: post.title,
     description: post.excerpt,
+    ...(keywords.length > 0 ? { keywords } : {}),
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: "article",
+      ...(post.coverImageUrl
+        ? { images: [{ url: post.coverImageUrl, alt: post.title }] }
+        : {}),
+    },
   };
 }
 
@@ -24,8 +39,12 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post) notFound();
 
   return (
-    <article>
-      <BlogHero title={post.title} publishedAt={post.publishedAt} />
+    <article className="blog-post-page">
+      <BlogHero
+        title={post.title}
+        publishedAt={post.publishedAt}
+        coverImageUrl={post.coverImageUrl}
+      />
       <BlogContentSection content={post.content} />
       <RelatedBlogsSection excludeSlug={slug} />
     </article>

@@ -49,6 +49,7 @@ export function FeaturedBlogsSection({
                       fill
                       className="featured-blogs-featured__img"
                       sizes="(max-width: 1022px) 100vw, 50vw"
+                      unoptimized
                     />
                   </div>
                 ) : null}
