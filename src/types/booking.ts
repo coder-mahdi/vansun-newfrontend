@@ -10,12 +10,19 @@ export type PiercingBookingStep1Values = {
 };
 
 export type PiercingBookingWizardPayload = PiercingBookingStep1Values & {
-  piercingTypeId: string;
-  jewelryId: string;
+  /** All selected placements from the visual picker (multi-select). */
+  piercingIds: string[];
+  jewelryChoice: "change-jewelry" | "bring-own";
+  jewelryTier: "basic" | "standard" | "premium" | "pro-premium" | null;
+  jewelryCode: string | null;
   aftercareKit: boolean;
   notes: string;
-  /** Sum of service fee + jewelry + optional aftercare (CAD) */
+  /** Sum of per-piercing service + optional aftercare (CAD) */
   totalCad: number;
+  /** API compat: use `multi` with `piercingIds`. */
+  piercingTypeId: string;
+  /** API compat: in-studio jewelry */
+  jewelryId: string;
 };
 
 export type PiercingBookingPayload = {

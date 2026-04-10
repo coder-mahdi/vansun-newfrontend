@@ -55,11 +55,19 @@
   color: rgba(250, 255, 238, 1);
 }
 
+.booking-wizard__heading--center {
+  text-align: center;
+}
+
 .booking-wizard__sub {
   margin: 0 0 1.5rem;
   font-size: 0.95rem;
   line-height: 1.5;
   color: rgba(250, 255, 238, 0.75);
+}
+
+.booking-wizard__sub--center {
+  text-align: center;
 }
 
 .booking-wizard__options {
@@ -125,6 +133,79 @@
   font-size: 0.82rem;
   line-height: 1.4;
   color: rgba(250, 255, 238, 0.65);
+}
+
+.booking-wizard__options--single-row {
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.booking-wizard__options--tiers {
+  margin-bottom: 0.9rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .booking-wizard__option {
+    padding: 0.65rem 0.75rem;
+    text-align: center;
+  }
+
+  .booking-wizard__option-title {
+    margin-bottom: 0;
+    font-size: 0.92rem;
+  }
+}
+
+.booking-wizard__jewelry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+
+  @media (min-width: 860px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.booking-wizard__jewelry-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  align-items: center;
+  width: 100%;
+  border: 2px solid rgba(250, 255, 238, 0.25);
+  border-radius: 10px;
+  background: rgba(250, 255, 238, 0.06);
+  color: rgba(250, 255, 238, 1);
+  cursor: pointer;
+  padding: 0.5rem;
+  font: inherit;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+
+  &:hover {
+    border-color: rgba(250, 255, 238, 0.55);
+    background: rgba(250, 255, 238, 0.12);
+  }
+}
+
+.booking-wizard__jewelry-card--selected {
+  border-color: rgba(250, 255, 238, 0.95);
+  background: rgba(250, 255, 238, 0.18);
+}
+
+.booking-wizard__jewelry-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.booking-wizard__jewelry-code {
+  font-size: 0.82rem;
+  opacity: 0.92;
 }
 
 .booking-wizard__nav {
@@ -199,6 +280,33 @@
     font-weight: 700;
     font-size: 1.1rem;
     background: rgba(250, 255, 238, 0.1);
+  }
+
+  &--block {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.booking-wizard__piercing-lines {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  width: 100%;
+}
+
+.booking-wizard__piercing-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  font-size: 0.9rem;
+  color: rgba(250, 255, 238, 0.95);
+  border-top: 1px solid rgba(250, 255, 238, 0.1);
+
+  &:first-child {
+    border-top: none;
+    padding-top: 0;
   }
 }
 
