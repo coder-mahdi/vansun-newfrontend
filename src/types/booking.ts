@@ -10,11 +10,15 @@ export type PiercingBookingStep1Values = {
 };
 
 export type PiercingBookingWizardPayload = PiercingBookingStep1Values & {
-  /** All selected placements from the visual picker (multi-select). */
+  /** Count per placement id (canonical). */
+  piercingQuantities: Record<string, number>;
+  /** Expanded list (same id repeated per unit); kept for API / legacy consumers. */
   piercingIds: string[];
   jewelryChoice: "change-jewelry" | "bring-own";
   jewelryTier: "basic" | "standard" | "premium" | "pro-premium" | null;
   jewelryCode: string | null;
+  /** Resolved from jewelry store API when studio jewelry is chosen. */
+  jewelryImageUrl: string | null;
   aftercareKit: boolean;
   notes: string;
   /** Sum of per-piercing service + optional aftercare (CAD) */

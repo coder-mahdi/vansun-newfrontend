@@ -191,6 +191,24 @@ export function TattooBookingForm({
     }
   };
 
+  const resetWizard = () => {
+    setPhase("wizard");
+    setStep(1);
+    setStep1(null);
+    setTattooStyle(null);
+    setDesign(null);
+    setExplanation("");
+    setFullName("");
+    setEmail("");
+    setPhone("");
+    setDate("");
+    setTime("");
+    setTermsAccepted(false);
+    setSubmitError(null);
+    setSubmitting(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   if (phase === "success") {
     return (
       <div className={cn("booking-page__success-message", className)}>
@@ -198,10 +216,13 @@ export function TattooBookingForm({
           Your tattoo appointment request was received.
           <br />
           <br />
-          If you need to cancel, please email us at least 5 hours before your
+          If you need to cancel, please email us at least 1 hour before your
           scheduled time.
         </p>
         <div className="success-buttons">
+          <button type="button" className="home-btn" onClick={resetWizard}>
+            Book again
+          </button>
           <a className="email-btn" href="mailto:info@vansunstudio.com">
             Send email
           </a>
@@ -461,10 +482,11 @@ export function TattooBookingForm({
 
       {step === 2 ? (
         <div className="booking-wizard__panel">
-          <h2 className="booking-wizard__heading">Tattoo style</h2>
           <p className="booking-wizard__sub">
-            Pick the direction that best matches your idea; we will refine
-            details together in the studio.
+            Our tattoo stations are fully sterilized, we use disposable
+            single-use needles, and the whole process follows hygienic practices
+            according to Vancouver Coastal Health standards. Our tattoo artists
+            are among the best in Vancouver.
           </p>
           <div
             className="booking-wizard__options"

@@ -17,12 +17,13 @@ export type PiercingSelectionDef = {
   hitSizePct?: number;
 };
 
-export const PIERCING_SERVICE_BASE_CAD = 36;
-export const PIERCING_LIP_CAD = 17;
+export const PIERCING_SERVICE_BASE_CAD = 39;
+/** Lip / mouth sheet: price is per piercing (each hole), e.g. ×2 in cart = 2× this. */
+export const PIERCING_LIP_CAD = 19;
 export const PIERCING_PRICE_BY_ID_CAD: Record<string, number> = {
-  "anti-eyebrow": 55,
-  tongue: 55,
-  nipple: 55,
+  "anti-eyebrow": 59,
+  tongue: 59,
+  nipple: 59,
 };
 
 export const PIERCING_IMAGE_META: Record<
@@ -212,6 +213,22 @@ export function getPiercingPriceCadById(id: string): number {
 
 export function defsForImage(key: PiercingImageKey): PiercingSelectionDef[] {
   return piercingSelectionDefs.filter((d) => d.image === key);
+}
+
+/** Expand quantities into a flat id list (API / jewelry usage). */
+export function flattenPiercingQuantities(
+  quantities: Record<string, number>
+): string[] {
+  const out: string[] = [];
+  for (const [id, n] of Object.entries(quantities)) {
+    const qty = Math.max(0, Math.floor(Number(n)));
+    for (let i = 0; i < qty; i++) out.push(id);
+  }
+  return out;
+}
+
+export function totalPiercingCount(quantities: Record<string, number>): number {
+  return Object.values(quantities).reduce((a, b) => a + Math.max(0, Math.floor(b)), 0);
 }
 
 export const piercingImageOrder: PiercingImageKey[] = [

@@ -25,7 +25,7 @@ export function isBookingScheduleDevMock(): boolean {
 export function getDevMockBookingDates(count = 12): AvailableDateRow[] {
   const rows: AvailableDateRow[] = [];
   const start = new Date();
-  for (let i = 1; i <= count; i++) {
+  for (let i = 0; i < count; i++) {
     const d = new Date(start);
     d.setDate(d.getDate() + i);
     const y = d.getFullYear();

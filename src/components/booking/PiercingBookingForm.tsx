@@ -7,8 +7,10 @@ import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { PiercingVisualPicker } from "@/components/booking/PiercingVisualPicker";
 import { PIERCING_AFTERCARE_KIT_PRICE_CAD } from "@/data/piercing-booking-catalog";
 import {
+  flattenPiercingQuantities,
   getPiercingPriceCadById,
   getPiercingSelectionDef,
+  totalPiercingCount,
 } from "@/data/piercings-selection";
 import { useBookingSchedule } from "@/hooks/use-booking-schedule";
 import { cn } from "@/lib/helpers";
@@ -46,10 +48,10 @@ const JEWELRY_TIERS: JewelryTier[] = [
   "pro-premium",
 ];
 const JEWELRY_TIER_PRICE_CAD: Record<JewelryTier, number> = {
-  basic: 23,
-  standard: 43,
+  basic: 25,
+  standard: 45,
   premium: 65,
-  "pro-premium": 78,
+  "pro-premium": 80,
 };
 const SALES_TAX_RATE = 0.12;
 const PIERCER_NOTIFICATION_EMAIL = "masiworld93@gmail.com";
@@ -79,7 +81,14 @@ export function PiercingBookingForm({
   const [step, setStep] = useState<WizardStep>(1);
 
   const [step1, setStep1] = useState<PiercingBookingStep1Values | null>(null);
-  const [selectedPiercingIds, setSelectedPiercingIds] = useState<string[]>([]);
+  const [piercingQuantities, setPiercingQuantities] = useState<
+    Record<string, number>
+  >({});
+
+  const expandedPiercingIds = useMemo(
+    () => flattenPiercingQuantities(piercingQuantities),
+    [piercingQuantities]
+  );
   const [jewelryChoice, setJewelryChoice] = useState<
     "change-jewelry" | "bring-own"
   >("change-jewelry");
@@ -121,7 +130,8 @@ export function PiercingBookingForm({
 
   const selectedUsageAreas = useMemo(() => {
     const out = new Set<JewelryUsageArea>();
-    for (const id of selectedPiercingIds) {
+    for (const id of Object.keys(piercingQuantities)) {
+      if ((piercingQuantities[id] ?? 0) <= 0) continue;
       const def = getPiercingSelectionDef(id);
       if (!def) continue;
       if (def.image === "face-body") out.add("face-and-body");
@@ -129,7 +139,7 @@ export function PiercingBookingForm({
       else if (def.image === "ears") out.add("ear");
     }
     return out;
-  }, [selectedPiercingIds]);
+  }, [piercingQuantities]);
 
   const filteredJewelryItems = useMemo(() => {
     return jewelryItems.filter(
@@ -146,8 +156,10 @@ export function PiercingBookingForm({
 
   const totals = useMemo(() => {
     let service = 0;
-    for (const id of selectedPiercingIds) {
-      service += getPiercingPriceCadById(id);
+    for (const [id, qty] of Object.entries(piercingQuantities)) {
+      const n = Math.max(0, Math.floor(qty));
+      if (n <= 0) continue;
+      service += getPiercingPriceCadById(id) * n;
     }
     const jewelry =
       jewelryChoice === "change-jewelry"
@@ -164,12 +176,23 @@ export function PiercingBookingForm({
       taxCad: tax,
       totalCad: subtotal + tax,
     };
-  }, [selectedPiercingIds, jewelryChoice, selectedJewelryTier, aftercareKit]);
+  }, [piercingQuantities, jewelryChoice, selectedJewelryTier, aftercareKit]);
 
-  const togglePiercing = (id: string) => {
-    setSelectedPiercingIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+  const incrementPiercing = (id: string) => {
+    setPiercingQuantities((prev) => ({
+      ...prev,
+      [id]: (prev[id] ?? 0) + 1,
+    }));
+  };
+
+  const decrementPiercing = (id: string) => {
+    setPiercingQuantities((prev) => {
+      const next = { ...prev };
+      const q = (next[id] ?? 0) - 1;
+      if (q <= 0) delete next[id];
+      else next[id] = q;
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -245,7 +268,7 @@ export function PiercingBookingForm({
   };
 
   const handleStep2Next = () => {
-    if (selectedPiercingIds.length === 0) return;
+    if (totalPiercingCount(piercingQuantities) === 0) return;
     setStep(3);
   };
 
@@ -257,7 +280,7 @@ export function PiercingBookingForm({
   const handleFinalSubmit = async () => {
     if (
       !step1 ||
-      selectedPiercingIds.length === 0 ||
+      totalPiercingCount(piercingQuantities) === 0 ||
       (jewelryChoice === "change-jewelry" && !selectedJewelryCode)
     ) {
       return;
@@ -282,14 +305,27 @@ export function PiercingBookingForm({
     }
 
     const totalCad = totals.totalCad;
-    const selectedPiercingLines = selectedPiercingIds.map((id) => {
-      const def = getPiercingSelectionDef(id);
-      return {
-        id,
-        label: def?.label ?? id,
-        price_cad: getPiercingPriceCadById(id),
-      };
-    });
+    const selectedPiercingLines = Object.entries(piercingQuantities)
+      .filter(([, q]) => q > 0)
+      .map(([id, quantity]) => {
+        const def = getPiercingSelectionDef(id);
+        const unit = getPiercingPriceCadById(id);
+        return {
+          id,
+          label: def?.label ?? id,
+          quantity,
+          unit_price_cad: unit,
+          line_total_cad: unit * quantity,
+        };
+      });
+
+    const selectedJewelryItem =
+      jewelryChoice === "change-jewelry" && selectedJewelryCode
+        ? jewelryItems.find((j) => j.code === selectedJewelryCode)
+        : undefined;
+    const jewelryImageUrl =
+      selectedJewelryItem?.image_url?.trim() || null;
+
     const selectedJewelryDetails =
       jewelryChoice === "change-jewelry"
         ? {
@@ -297,19 +333,25 @@ export function PiercingBookingForm({
             tier: selectedJewelryTier,
             code: selectedJewelryCode,
             fee_cad: totals.jewelryCad,
+            image_url: jewelryImageUrl,
           }
         : {
             choice: jewelryChoice,
             tier: null,
             code: null,
             fee_cad: 0,
+            image_url: null,
           };
     const wizardPayload: PiercingBookingWizardPayload = {
       ...step1,
-      piercingIds: selectedPiercingIds,
+      piercingQuantities: Object.fromEntries(
+        Object.entries(piercingQuantities).filter(([, q]) => q > 0)
+      ),
+      piercingIds: expandedPiercingIds,
       jewelryChoice,
       jewelryTier: jewelryChoice === "change-jewelry" ? selectedJewelryTier : null,
       jewelryCode: jewelryChoice === "change-jewelry" ? selectedJewelryCode : null,
+      jewelryImageUrl,
       piercingTypeId: "multi",
       jewelryId:
         jewelryChoice === "change-jewelry"
@@ -331,7 +373,10 @@ export function PiercingBookingForm({
       terms_accepted: step1.termsAccepted,
       service: "piercing",
       piercing_type_id: "multi",
-      piercing_ids: selectedPiercingIds,
+      piercing_ids: expandedPiercingIds,
+      piercing_quantities: Object.fromEntries(
+        Object.entries(piercingQuantities).filter(([, q]) => q > 0)
+      ),
       jewelry_id:
         jewelryChoice === "change-jewelry"
           ? (selectedJewelryCode ?? "change-jewelry")
@@ -341,6 +386,10 @@ export function PiercingBookingForm({
         jewelryChoice === "change-jewelry" ? selectedJewelryTier : undefined,
       jewelry_code:
         jewelryChoice === "change-jewelry" ? selectedJewelryCode : undefined,
+      jewelry_image_url:
+        jewelryChoice === "change-jewelry" && jewelryImageUrl
+          ? jewelryImageUrl
+          : undefined,
       jewelry_fee_cad: totals.jewelryCad,
       piercing_lines: selectedPiercingLines,
       jewelry_details: selectedJewelryDetails,
@@ -383,7 +432,7 @@ export function PiercingBookingForm({
     setPhase("wizard");
     setStep(1);
     setStep1(null);
-    setSelectedPiercingIds([]);
+    setPiercingQuantities({});
     setJewelryChoice("change-jewelry");
     setSelectedJewelryTier("basic");
     setSelectedJewelryCode(null);
@@ -403,7 +452,7 @@ export function PiercingBookingForm({
           Your piercing appointment request was received.
           <br />
           <br />
-          If you need to cancel, please email us at least 5 hours before your
+          If you need to cancel, please email us at least 1 hour before your
           scheduled time.
         </p>
         <div className="success-buttons">
@@ -412,7 +461,7 @@ export function PiercingBookingForm({
             className="home-btn"
             onClick={resetWizard}
           >
-            Book new appointment
+            Book again
           </button>
           <a className="email-btn" href="mailto:info@vansunstudio.com">
             Send email
@@ -631,13 +680,16 @@ export function PiercingBookingForm({
             Piercings
           </h2>
           <p className="booking-wizard__sub booking-wizard__sub--center">
-            Choose one or more placements from the list below. All piercings
-            are done with a needle, and every tool is sterilized with modern
-            equipment according to Vancouver Coastal Health standards.
+            Choose placements from the list below. Tap again or use + for a
+            second piercing of the same type (for example both nipples or
+            paired lip piercings). All piercings are done with a needle, and
+            every tool is sterilized with modern equipment according to
+            Vancouver Coastal Health standards.
           </p>
           <PiercingVisualPicker
-            selectedIds={selectedPiercingIds}
-            onToggle={togglePiercing}
+            quantities={piercingQuantities}
+            onIncrement={incrementPiercing}
+            onDecrement={decrementPiercing}
           />
           <div className="booking-wizard__nav">
             <button
@@ -650,7 +702,7 @@ export function PiercingBookingForm({
             <button
               type="button"
               className="booking-wizard__btn booking-wizard__btn--primary"
-              disabled={selectedPiercingIds.length === 0}
+              disabled={totalPiercingCount(piercingQuantities) === 0}
               onClick={handleStep2Next}
             >
               Continue
@@ -819,54 +871,54 @@ export function PiercingBookingForm({
             <li className="booking-wizard__summary-row booking-wizard__summary-row--block">
               <span className="booking-wizard__summary-label">Piercings</span>
               <ul className="booking-wizard__piercing-lines">
-                {selectedPiercingIds.map((id) => {
-                  const def = getPiercingSelectionDef(id);
-                  const label = def?.label ?? id;
-                  return (
-                    <li key={id} className="booking-wizard__piercing-line">
-                      <span>{label}</span>
-                      <span>{formatCad(getPiercingPriceCadById(id))}</span>
-                    </li>
-                  );
-                })}
+                {Object.entries(piercingQuantities)
+                  .filter(([, q]) => q > 0)
+                  .map(([id, qty]) => {
+                    const def = getPiercingSelectionDef(id);
+                    const label = def?.label ?? id;
+                    const unit = getPiercingPriceCadById(id);
+                    return (
+                      <li key={id} className="booking-wizard__piercing-line">
+                        <span>
+                          {label}
+                          {qty > 1 ? ` × ${qty}` : ""}
+                        </span>
+                        <span>{formatCad(unit * qty)}</span>
+                      </li>
+                    );
+                  })}
               </ul>
             </li>
-            <li className="booking-wizard__summary-row">
+            <li className="booking-wizard__summary-row booking-wizard__summary-row--block">
               <span className="booking-wizard__summary-label">Jewelry</span>
-              <span className="booking-wizard__summary-value">
-                {jewelryChoice === "change-jewelry"
-                  ? `${selectedJewelryCode ?? "Selected in step 3"} (${jewelryTierLabel(selectedJewelryTier)})`
-                  : "Bring own jewelry"}
-              </span>
+              <ul className="booking-wizard__piercing-lines">
+                <li className="booking-wizard__piercing-line">
+                  <span>
+                    {jewelryChoice === "change-jewelry"
+                      ? `${jewelryTierLabel(selectedJewelryTier)}${
+                          selectedJewelryCode
+                            ? ` · ${selectedJewelryCode}`
+                            : ""
+                        }`
+                      : "Bring your own jewelry"}
+                  </span>
+                  <span>
+                    {jewelryChoice === "change-jewelry"
+                      ? formatCad(totals.jewelryCad)
+                      : "—"}
+                  </span>
+                </li>
+              </ul>
             </li>
-            <li className="booking-wizard__summary-row">
-              <span className="booking-wizard__summary-label">Jewelry option</span>
-              <span className="booking-wizard__summary-value">
-                {jewelryChoice === "change-jewelry"
-                  ? "Studio jewelry"
-                  : "Bring your own jewelry"}
-              </span>
-            </li>
-            {jewelryChoice === "change-jewelry" ? (
-              <li className="booking-wizard__summary-row">
-                <span className="booking-wizard__summary-label">Jewelry tier</span>
-                <span className="booking-wizard__summary-value">
-                  {jewelryTierLabel(selectedJewelryTier)}
-                </span>
-              </li>
-            ) : null}
-            <li className="booking-wizard__summary-row">
-              <span className="booking-wizard__summary-label">Service fee</span>
-              <span className="booking-wizard__summary-value">
-                {formatCad(totals.serviceFeeCad)}
-              </span>
-            </li>
-            {totals.jewelryCad > 0 ? (
-              <li className="booking-wizard__summary-row">
-                <span className="booking-wizard__summary-label">Jewelry fee</span>
-                <span className="booking-wizard__summary-value">
-                  {formatCad(totals.jewelryCad)}
-                </span>
+            {aftercareKit ? (
+              <li className="booking-wizard__summary-row booking-wizard__summary-row--block">
+                <span className="booking-wizard__summary-label">Aftercare</span>
+                <ul className="booking-wizard__piercing-lines">
+                  <li className="booking-wizard__piercing-line">
+                    <span>Aftercare kit</span>
+                    <span>{formatCad(PIERCING_AFTERCARE_KIT_PRICE_CAD)}</span>
+                  </li>
+                </ul>
               </li>
             ) : null}
             <li className="booking-wizard__summary-row">
@@ -881,16 +933,6 @@ export function PiercingBookingForm({
                 {formatCad(totals.taxCad)}
               </span>
             </li>
-            {aftercareKit ? (
-              <li className="booking-wizard__summary-row">
-                <span className="booking-wizard__summary-label">
-                  Aftercare kit
-                </span>
-                <span className="booking-wizard__summary-value">
-                  {formatCad(PIERCING_AFTERCARE_KIT_PRICE_CAD)}
-                </span>
-              </li>
-            ) : null}
             <li className="booking-wizard__summary-row booking-wizard__summary-row--total">
               <span className="booking-wizard__summary-label">Total</span>
               <span className="booking-wizard__summary-value">
@@ -907,8 +949,12 @@ export function PiercingBookingForm({
                 onChange={(ev) => setAftercareKit(ev.target.checked)}
               />
               <span>
-                Add aftercare kit ({formatCad(PIERCING_AFTERCARE_KIT_PRICE_CAD)}
-                ): saline, instructions, and essentials for healing.
+                <span className="booking-wizard__aftercare-strong">
+                  Highly recommended —{" "}
+                </span>
+                add aftercare kit ({formatCad(PIERCING_AFTERCARE_KIT_PRICE_CAD)}
+                ): saline, instructions, and essentials for a smoother healing
+                process.
               </span>
             </label>
           </div>

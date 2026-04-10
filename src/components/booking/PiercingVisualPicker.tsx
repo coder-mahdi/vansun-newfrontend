@@ -21,8 +21,10 @@ function formatCad(n: number): string {
 }
 
 type PiercingVisualPickerProps = {
-  selectedIds: string[];
-  onToggle: (id: string) => void;
+  /** Count per piercing id (omitted or zero = not selected). */
+  quantities: Record<string, number>;
+  onIncrement: (id: string) => void;
+  onDecrement: (id: string) => void;
   className?: string;
 };
 
@@ -54,37 +56,75 @@ function slotForImageKey(
 
 function ChipList({
   defs,
-  selectedSet,
-  onToggle,
+  quantities,
+  onIncrement,
 }: {
   defs: PiercingSelectionDef[];
-  selectedSet: Set<string>;
-  onToggle: (id: string) => void;
+  quantities: Record<string, number>;
+  onIncrement: (id: string) => void;
 }) {
   return (
     <ul className="piercing-visual-picker__list" role="list">
       {defs.map((def) => {
-        const selected = selectedSet.has(def.id);
-        const price = getPiercingServiceCad(def);
+        const qty = quantities[def.id] ?? 0;
+        const selected = qty > 0;
+        const unit = getPiercingServiceCad(def);
         return (
           <li key={def.id} className="piercing-visual-picker__list-item">
-            <button
-              type="button"
-              className={cn(
-                "piercing-visual-picker__chip",
-                selected && "piercing-visual-picker__chip--selected"
-              )}
-              aria-pressed={selected}
-              aria-label={`${def.label}, ${formatCad(price)}`}
-              onClick={() => onToggle(def.id)}
-            >
-              <span className="piercing-visual-picker__chip-label">
-                {def.label}
-              </span>
-              <span className="piercing-visual-picker__chip-price">
-                {formatCad(price)}
-              </span>
-            </button>
+            <div className="piercing-visual-picker__chip-row">
+              <button
+                type="button"
+                className={cn(
+                  "piercing-visual-picker__chip",
+                  selected && "piercing-visual-picker__chip--selected"
+                )}
+                aria-label={
+                  qty === 0
+                    ? `Add ${def.label}, ${formatCad(unit)} each`
+                    : `${def.label}, ${qty} selected, ${formatCad(unit)} each`
+                }
+                onClick={() => {
+                  if (qty === 0) onIncrement(def.id);
+                }}
+              >
+                <span className="piercing-visual-picker__chip-label">
+                  {def.label}
+                  {qty > 0 ? (
+                    <span className="piercing-visual-picker__chip-qty" aria-hidden>
+                      ×{qty}
+                    </span>
+                  ) : null}
+                </span>
+                <span className="piercing-visual-picker__chip-price">
+                  {formatCad(unit)}
+                  {def.pricing === "lip" ? (
+                    <span className="piercing-visual-picker__chip-unit-note">
+                      {" "}
+                      · each
+                    </span>
+                  ) : null}
+                  {qty > 1 ? (
+                    <span className="piercing-visual-picker__chip-subtotal">
+                      {" "}
+                      · {formatCad(unit * qty)}
+                    </span>
+                  ) : null}
+                </span>
+              </button>
+              {selected ? (
+                <button
+                  type="button"
+                  className="piercing-visual-picker__chip-add"
+                  aria-label={`Add another ${def.label}`}
+                  onClick={(ev) => {
+                    ev.preventDefault();
+                    onIncrement(def.id);
+                  }}
+                >
+                  +
+                </button>
+              ) : null}
+            </div>
           </li>
         );
       })}
@@ -93,27 +133,29 @@ function ChipList({
 }
 
 export function PiercingVisualPicker({
-  selectedIds,
-  onToggle,
+  quantities,
+  onIncrement,
+  onDecrement,
   className,
 }: PiercingVisualPickerProps) {
   const [activeCategory, setActiveCategory] = useState<PiercingImageKey>(
     piercingImageOrder[0]
   );
-  const selectedSet = new Set(selectedIds);
   const activeDefs = defsForImage(activeCategory);
-  const selectedServices = selectedIds.map((id) => {
+
+  const selectedEntries = Object.entries(quantities).filter(([, q]) => q > 0);
+  const selectedServices = selectedEntries.map(([id, qty]) => {
     const def = getPiercingSelectionDef(id);
+    const unit = getPiercingPriceCadById(id);
     return {
       id,
       label: def?.label ?? id,
-      price: getPiercingPriceCadById(id),
+      qty,
+      unit,
+      line: unit * qty,
     };
   });
-  const servicesTotal = selectedIds.reduce(
-    (sum, id) => sum + getPiercingPriceCadById(id),
-    0
-  );
+  const servicesTotal = selectedServices.reduce((sum, s) => sum + s.line, 0);
 
   return (
     <div className={cn("piercing-visual-picker", className)}>
@@ -187,26 +229,60 @@ export function PiercingVisualPicker({
         >
           <ChipList
             defs={activeDefs}
-            selectedSet={selectedSet}
-            onToggle={onToggle}
+            quantities={quantities}
+            onIncrement={onIncrement}
           />
           <div
             className="piercing-visual-picker__total"
             aria-live="polite"
             aria-atomic="true"
           >
-            <span className="piercing-visual-picker__total-label">Services</span>
-            <ul className="piercing-visual-picker__total-lines" role="list">
-              {selectedServices.map((service) => (
-                <li
-                  key={service.id}
-                  className="piercing-visual-picker__total-line"
-                >
-                  <span>{service.label}</span>
-                  <span>{formatCad(service.price)}</span>
-                </li>
-              ))}
-            </ul>
+            <span className="piercing-visual-picker__total-label">Your cart</span>
+            {selectedServices.length === 0 ? (
+              <p className="piercing-visual-picker__total-empty">
+                Tap a placement to add it. Use + for a second on the same side.
+              </p>
+            ) : (
+              <ul className="piercing-visual-picker__total-lines" role="list">
+                {selectedServices.map((service) => (
+                  <li
+                    key={service.id}
+                    className="piercing-visual-picker__total-line piercing-visual-picker__total-line--cart"
+                  >
+                    <span className="piercing-visual-picker__total-line-name">
+                      {service.label}
+                    </span>
+                    <div className="piercing-visual-picker__qty-stepper">
+                      <button
+                        type="button"
+                        className="piercing-visual-picker__qty-btn"
+                        aria-label={`Remove one ${service.label}`}
+                        onClick={() => onDecrement(service.id)}
+                      >
+                        −
+                      </button>
+                      <span
+                        className="piercing-visual-picker__qty-value"
+                        aria-live="polite"
+                      >
+                        {service.qty}
+                      </span>
+                      <button
+                        type="button"
+                        className="piercing-visual-picker__qty-btn"
+                        aria-label={`Add one ${service.label}`}
+                        onClick={() => onIncrement(service.id)}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <span className="piercing-visual-picker__total-line-price">
+                      {formatCad(service.line)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="piercing-visual-picker__total-final">
               <span>Total service</span>
               <span className="piercing-visual-picker__total-value">
