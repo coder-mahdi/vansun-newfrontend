@@ -27,7 +27,7 @@ export const piercingBookingCategories: PiercingTypeCategory[] = [
     id: "ear",
     label: "Ear",
     description: "Lobe, helix, flat, conch, and other ear placements.",
-    serviceFeeCad: 40,
+    serviceFeeCad: 39,
     jewelry: [
       { id: "ear-ti-stud", label: "Implant-grade titanium stud", priceCad: 28 },
       { id: "ear-ti-hoop", label: "Titanium hinged ring", priceCad: 42 },
@@ -38,7 +38,7 @@ export const piercingBookingCategories: PiercingTypeCategory[] = [
     id: "nose",
     label: "Nose",
     description: "Nostril and related placements.",
-    serviceFeeCad: 45,
+    serviceFeeCad: 39,
     jewelry: [
       { id: "nose-ti-nostril", label: "Titanium nostril screw / labret", priceCad: 32 },
       { id: "nose-gold-nostril", label: "14k gold nostril stud", priceCad: 88 },
@@ -48,7 +48,7 @@ export const piercingBookingCategories: PiercingTypeCategory[] = [
     id: "oral",
     label: "Oral & facial",
     description: "Lip, septum, eyebrow, and other facial piercings.",
-    serviceFeeCad: 50,
+    serviceFeeCad: 39,
     jewelry: [
       { id: "facial-ti-labret", label: "Titanium labret post + end", priceCad: 35 },
       { id: "facial-septum-ring", label: "Titanium septum clicker", priceCad: 48 },
@@ -58,7 +58,7 @@ export const piercingBookingCategories: PiercingTypeCategory[] = [
     id: "body",
     label: "Body",
     description: "Navel and select surface work; final jewelry in-studio.",
-    serviceFeeCad: 55,
+    serviceFeeCad: 59,
     jewelry: [
       { id: "body-navel-ti", label: "Titanium curved bar (navel)", priceCad: 45 },
       { id: "body-navel-gold", label: "14k gold navel curve", priceCad: 120 },

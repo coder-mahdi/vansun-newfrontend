@@ -282,6 +282,44 @@ export function filterSlotsByBookedStarts(
   return slots.filter((s) => !taken.has(normalizeSlotStartTime(s.time)));
 }
 
+/** Same-calendar-day bookings: slot start must be at least this far in the future (local time). */
+export const SAME_DAY_BOOKING_MIN_LEAD_MS = 60 * 60 * 1000;
+
+function localDateTimeFromYmdAndSlotTime(ymd: string, time: string): Date {
+  const parts = ymd.split("-").map((x) => parseInt(x, 10));
+  if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) {
+    return new Date(NaN);
+  }
+  const [yy, mo, dd] = parts;
+  const tm = time.trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!tm) return new Date(NaN);
+  const h = parseInt(tm[1], 10);
+  const min = parseInt(tm[2], 10);
+  return new Date(yy, mo - 1, dd, h, min, 0, 0);
+}
+
+/**
+ * When `selectedDateYmd` is the client's local "today", drops slots that start
+ * sooner than `leadMs` from `now` (default 1 hour).
+ */
+export function filterSlotsBySameDayMinimumLead(
+  slots: HalfHourSlotRow[],
+  selectedDateYmd: string,
+  now: Date = new Date(),
+  leadMs: number = SAME_DAY_BOOKING_MIN_LEAD_MS
+): HalfHourSlotRow[] {
+  const y = now.getFullYear();
+  const m = pad2(now.getMonth() + 1);
+  const day = pad2(now.getDate());
+  const todayYmd = `${y}-${m}-${day}`;
+  if (selectedDateYmd !== todayYmd) return slots;
+  const minStartTs = now.getTime() + leadMs;
+  return slots.filter((s) => {
+    const start = localDateTimeFromYmdAndSlotTime(selectedDateYmd, s.time);
+    return !Number.isNaN(start.getTime()) && start.getTime() >= minStartTs;
+  });
+}
+
 const DAY_LABEL: Record<DayKey, string> = {
   monday: "Mon",
   tuesday: "Tue",

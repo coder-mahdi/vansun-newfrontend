@@ -5,6 +5,7 @@ import {
   buildAvailableDatesFromVansunDays,
   buildHalfHourSlotsForVansunDay,
   filterSlotsByBookedStarts,
+  filterSlotsBySameDayMinimumLead,
   vansunDaysHasOpenSlotsForService,
   type VansunResolvedDayRow,
 } from "@/lib/booking-schedule-from-hours";
@@ -91,7 +92,7 @@ export function useBookingSchedule(
     (async () => {
       try {
         const today = new Date();
-        const from = formatLocalYmd(addDays(today, 1));
+        const from = formatLocalYmd(today);
         const to = formatLocalYmd(addDays(today, BOOKING_DATE_HORIZON_DAYS));
         const payload = await fetchVansunWorkingHours(from, to);
         if (cancelled) return;
@@ -138,7 +139,12 @@ export function useBookingSchedule(
     }
 
     if (scheduleDevMock) {
-      setAvailableTimeSlots(getDevMockBookingTimeSlots());
+      setAvailableTimeSlots(
+        filterSlotsBySameDayMinimumLead(
+          getDevMockBookingTimeSlots(),
+          selectedDate
+        )
+      );
       setTimesLoading(false);
       return;
     }
@@ -167,6 +173,7 @@ export function useBookingSchedule(
           if (booked !== null && booked.length > 0) {
             slots = filterSlotsByBookedStarts(slots, booked);
           }
+          slots = filterSlotsBySameDayMinimumLead(slots, selectedDate);
           if (!cancelled) setAvailableTimeSlots(slots);
         } catch (e) {
           if (!cancelled) {
@@ -191,7 +198,11 @@ export function useBookingSchedule(
       (async () => {
         try {
           const times = await fetchAvailableBookingTimes(service, selectedDate);
-          if (!cancelled) setAvailableTimeSlots(times);
+          if (!cancelled) {
+            setAvailableTimeSlots(
+              filterSlotsBySameDayMinimumLead(times, selectedDate)
+            );
+          }
         } catch (e) {
           if (!cancelled) {
             setScheduleError(
