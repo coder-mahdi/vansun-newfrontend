@@ -13,8 +13,6 @@ import { cn } from "@/lib/helpers";
 import { RECAPTCHA_SITE_KEY } from "@/lib/recaptcha";
 import type { TattooConsentSubmitBody } from "@/types/consent";
 
-const ACK_COUNT = tattooConsentMainAcknowledgements.length;
-
 type TattooConsentFormProps = {
   className?: string;
 };
@@ -27,9 +25,7 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
   const [phone, setPhone] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
 
-  const [ack, setAck] = useState<boolean[]>(() =>
-    Array.from({ length: ACK_COUNT }, () => false)
-  );
+  const [ackMain, setAckMain] = useState(false);
   const [finalReadVoluntary, setFinalReadVoluntary] = useState(false);
   const [finalDeclare, setFinalDeclare] = useState(false);
   const [termsPrivacy, setTermsPrivacy] = useState(false);
@@ -40,41 +36,36 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const setAckAt = (index: number, value: boolean) => {
-    setAck((prev) => {
-      const next = [...prev];
-      next[index] = value;
-      return next;
-    });
-  };
-
   const buildBody = (
     recaptchaToken?: string | null
-  ): TattooConsentSubmitBody => ({
-    service: "tattoo",
-    full_name: fullName.trim(),
-    email: email.trim(),
-    phone: phone.trim(),
-    date_of_birth: dateOfBirth,
-    ack_age_18_or_parental_consent: ack[0]!,
-    ack_not_pregnant_nursing_condition_healing: ack[1]!,
-    ack_medical_skin_disclosed_or_none: ack[2]!,
-    ack_allergies_none_or_disclosed: ack[3]!,
-    ack_not_intoxicated: ack[4]!,
-    ack_permanent_change_no_restoration_guarantee: ack[5]!,
-    ack_risks_tattooing_accepted: ack[6]!,
-    ack_aftercare_received_agreed: ack[7]!,
-    ack_dizziness_symptoms_will_notify: ack[8]!,
-    ack_sterile_disposable_equipment_hygiene: ack[9]!,
-    ack_services_sales_final_non_refundable: ack[10]!,
-    ack_studio_promotional_photos_permission: ack[11]!,
-    ack_release_artist_studio_voluntary: ack[12]!,
-    ack_read_voluntary: finalReadVoluntary,
-    ack_declare_agree_all: finalDeclare,
-    terms_and_privacy_accepted: termsPrivacy,
-    initials: initials.trim().toUpperCase(),
-    recaptcha_token: recaptchaToken ?? undefined,
-  });
+  ): TattooConsentSubmitBody => {
+    const m = ackMain;
+    return {
+      service: "tattoo",
+      full_name: fullName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      date_of_birth: dateOfBirth,
+      ack_age_18_or_parental_consent: m,
+      ack_not_pregnant_nursing_condition_healing: m,
+      ack_medical_skin_disclosed_or_none: m,
+      ack_allergies_none_or_disclosed: m,
+      ack_not_intoxicated: m,
+      ack_permanent_change_no_restoration_guarantee: m,
+      ack_risks_tattooing_accepted: m,
+      ack_aftercare_received_agreed: m,
+      ack_dizziness_symptoms_will_notify: m,
+      ack_sterile_disposable_equipment_hygiene: m,
+      ack_services_sales_final_non_refundable: m,
+      ack_studio_promotional_photos_permission: m,
+      ack_release_artist_studio_voluntary: m,
+      ack_read_voluntary: finalReadVoluntary,
+      ack_declare_agree_all: finalDeclare,
+      terms_and_privacy_accepted: termsPrivacy,
+      initials: initials.trim().toUpperCase(),
+      recaptcha_token: recaptchaToken ?? undefined,
+    };
+  };
 
 
   const validate = (): string | null => {
@@ -82,7 +73,8 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
     if (!email.trim()) return "Please enter your email.";
     if (!phone.trim()) return "Please enter your phone number.";
     if (!dateOfBirth) return "Please enter your date of birth.";
-    if (ack.some((v) => !v)) return "Please confirm all agreement items.";
+    if (!ackMain)
+      return "Please confirm you have read and agree to all statements listed above.";
     if (!finalReadVoluntary) return "Please confirm you have read and agree to proceed.";
     if (!finalDeclare) return "Please confirm your declaration.";
     if (!termsPrivacy) return "Please accept the Terms & Conditions and Privacy Policy.";
@@ -131,7 +123,7 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
     setEmail("");
     setPhone("");
     setDateOfBirth("");
-    setAck(Array.from({ length: ACK_COUNT }, () => false));
+    setAckMain(false);
     setFinalReadVoluntary(false);
     setFinalDeclare(false);
     setTermsPrivacy(false);
@@ -216,17 +208,23 @@ export function TattooConsentForm({ className }: TattooConsentFormProps) {
         />
       </div>
 
-      {tattooConsentMainAcknowledgements.map((text, i) => (
-        <div key={i} className="checkbox-container">
-          <input
-            id={`tattoo-consent-ack-${i}`}
-            type="checkbox"
-            checked={ack[i]}
-            onChange={(e) => setAckAt(i, e.target.checked)}
-          />
-          <label htmlFor={`tattoo-consent-ack-${i}`}>{text}</label>
-        </div>
-      ))}
+      <ul className="consent-ack-list">
+        {tattooConsentMainAcknowledgements.map((text, i) => (
+          <li key={i}>{text}</li>
+        ))}
+      </ul>
+
+      <div className="checkbox-container">
+        <input
+          id="tattoo-consent-ack-main"
+          type="checkbox"
+          checked={ackMain}
+          onChange={(e) => setAckMain(e.target.checked)}
+        />
+        <label htmlFor="tattoo-consent-ack-main">
+          I have read, understood, and agree to all of the statements listed above.
+        </label>
+      </div>
 
       <div className="checkbox-container">
         <input

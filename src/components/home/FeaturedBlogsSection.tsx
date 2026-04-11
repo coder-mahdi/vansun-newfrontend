@@ -1,26 +1,25 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { featuredLatestVideo } from "@/data/blogs";
-import { devCmsAsset } from "@/lib/content-assets";
 import { cn } from "@/lib/helpers";
-import type { BlogSummary } from "@/types/blog";
+import type { BlogSummary, BlogVideo } from "@/types/blog";
 
 type FeaturedBlogsSectionProps = {
   posts: BlogSummary[];
   className?: string;
+  /** From `GET /content/videos` only; when absent, no video column is shown. */
+  latestVideo?: BlogVideo | null;
 };
 
 export function FeaturedBlogsSection({
   posts,
   className,
+  latestVideo: latestVideoProp,
 }: FeaturedBlogsSectionProps) {
   const [latest, ...rest] = posts;
   const recentTitles = rest.slice(0, 6);
 
-  const videoThumbUrl = featuredLatestVideo.thumbnailLocal
-    ? devCmsAsset(featuredLatestVideo.thumbnailLocal)
-    : undefined;
+  const apiVideo = latestVideoProp?.youtubeId ? latestVideoProp : null;
 
   return (
     <section
@@ -34,7 +33,12 @@ export function FeaturedBlogsSection({
       {!latest ? (
         <p className="featured-blogs-section__empty">No posts yet.</p>
       ) : (
-        <div className="featured-blogs-layout">
+        <div
+          className={cn(
+            "featured-blogs-layout",
+            !apiVideo && "featured-blogs-layout--single"
+          )}
+        >
           <div className="featured-blogs-column featured-blogs-column--articles">
             <article className="featured-blogs-featured">
               <Link
@@ -74,7 +78,11 @@ export function FeaturedBlogsSection({
             >
               <h3 className="featured-blogs-titles__label">Recent posts</h3>
               {recentTitles.length === 0 ? (
-                <p className="featured-blogs-titles__empty">More posts soon.</p>
+                <ul className="featured-blogs-titles__list">
+                  <li>
+                    <Link href="/blogs">Blog</Link>
+                  </li>
+                </ul>
               ) : (
                 <ul className="featured-blogs-titles__list">
                   {recentTitles.map((post) => (
@@ -87,49 +95,32 @@ export function FeaturedBlogsSection({
             </nav>
           </div>
 
-          <div className="featured-blogs-column featured-blogs-column--video">
-            <div className="featured-blogs-video">
-              <h3
-                className="featured-blogs-video__label"
-                id="featured-video-label"
-              >
-                Latest video
-              </h3>
-              <div
-                className="featured-blogs-video__frame"
-                aria-labelledby="featured-video-label"
-              >
-                {featuredLatestVideo.youtubeId ? (
+          {apiVideo ? (
+            <div className="featured-blogs-column featured-blogs-column--video">
+              <div className="featured-blogs-video">
+                <h3
+                  className="featured-blogs-video__label"
+                  id="featured-video-label"
+                >
+                  Latest video
+                </h3>
+                <div
+                  className="featured-blogs-video__frame"
+                  aria-labelledby="featured-video-label"
+                >
                   <iframe
-                    title={featuredLatestVideo.title}
-                    src={`https://www.youtube-nocookie.com/embed/${featuredLatestVideo.youtubeId}`}
+                    title={apiVideo.title}
+                    src={`https://www.youtube-nocookie.com/embed/${apiVideo.youtubeId}`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                     loading="lazy"
                     className="featured-blogs-video__embed"
                   />
-                ) : videoThumbUrl ? (
-                  <div className="featured-blogs-video__thumb-wrap">
-                    <Image
-                      src={videoThumbUrl}
-                      alt=""
-                      fill
-                      className="featured-blogs-video__thumb"
-                      sizes="(max-width: 1022px) 100vw, 50vw"
-                    />
-                  </div>
-                ) : (
-                  <div
-                    className="featured-blogs-video__placeholder"
-                    role="img"
-                  />
-                )}
+                </div>
+                <p className="featured-blogs-video__caption">{apiVideo.title}</p>
               </div>
-              <p className="featured-blogs-video__caption">
-                {featuredLatestVideo.title}
-              </p>
             </div>
-          </div>
+          ) : null}
         </div>
       )}
     </section>

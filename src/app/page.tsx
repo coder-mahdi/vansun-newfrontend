@@ -3,17 +3,23 @@ import { FeaturedBlogsSection } from "@/components/home/FeaturedBlogsSection";
 import { HeroSection } from "@/components/home/HeroSection";
 import { JewelryGallerySection } from "@/components/home/JewelryGallerySection";
 import { ServicesSection } from "@/components/home/ServicesSection";
-import { fetchBlogSummaries } from "@/lib/blog-api";
+import {
+  fetchBlogSummaries,
+  fetchBlogVideos,
+  pickLatestBlogVideo,
+} from "@/lib/blog-api";
 import { loadHomePageContent } from "@/lib/home-cms";
 
 /** Always run CMS fetch at request time (avoids stale static HTML vs curl). */
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [blogPosts, home] = await Promise.all([
+  const [blogPosts, home, videos] = await Promise.all([
     fetchBlogSummaries(),
     loadHomePageContent(),
+    fetchBlogVideos(),
   ]);
+  const latestVideo = pickLatestBlogVideo(videos);
 
   return (
     <>
@@ -30,7 +36,7 @@ export default async function HomePage() {
         imageUrl={home.about.imageUrl}
         imageAlt={home.about.title}
       />
-      <FeaturedBlogsSection posts={blogPosts} />
+      <FeaturedBlogsSection posts={blogPosts} latestVideo={latestVideo} />
     </>
   );
 }

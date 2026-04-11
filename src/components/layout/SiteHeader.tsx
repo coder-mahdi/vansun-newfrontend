@@ -6,6 +6,7 @@ import { bookSubNav, headerNav } from "@/data/navigation";
 import { cn } from "@/lib/helpers";
 import { BookNowDropdown } from "./BookNowDropdown";
 import { MainNav } from "./MainNav";
+import { SiteBrandLink } from "./SiteBrandLink";
 
 const DESKTOP_MIN = 768;
 
@@ -55,9 +56,7 @@ export function SiteHeader({ className }: { className?: string }) {
       )}
     >
       <div className="site-header__inner site-header__inner--desktop">
-        <Link className="site-header__brand" href="/">
-          Vansun
-        </Link>
+        <SiteBrandLink />
         <div className="site-header__center">
           <BookNowDropdown />
         </div>
@@ -65,9 +64,7 @@ export function SiteHeader({ className }: { className?: string }) {
       </div>
 
       <div className="site-header__bar site-header__bar--mobile">
-        <Link className="site-header__brand" href="/" onClick={closeMenu}>
-          Vansun
-        </Link>
+        <SiteBrandLink onClick={closeMenu} />
         <button
           type="button"
           className={cn(
@@ -97,9 +94,7 @@ export function SiteHeader({ className }: { className?: string }) {
         aria-hidden={!menuOpen}
       >
         <div className="site-header__overlay-top">
-          <Link className="site-header__brand" href="/" onClick={closeMenu}>
-            Vansun
-          </Link>
+          <SiteBrandLink onClick={closeMenu} />
           <button
             type="button"
             className="site-header__hamburger site-header__hamburger--open site-header__hamburger--in-overlay"

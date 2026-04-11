@@ -9,16 +9,16 @@
   overflow: hidden;
   box-shadow: 0 1px 0 rgba(61, 44, 0, 0.04);
   transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease,
-    border-color 0.22s ease;
+    transform 0.28s ease,
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
 
   &:hover {
-    transform: translateY(-3px);
+    transform: translateY(-6px);
     box-shadow:
-      0 12px 28px rgba(61, 44, 0, 0.1),
-      0 4px 8px rgba(61, 44, 0, 0.06);
-    border-color: rgba(61, 44, 0, 0.16);
+      0 18px 40px rgba(61, 44, 0, 0.14),
+      0 8px 16px rgba(61, 44, 0, 0.08);
+    border-color: rgba(61, 44, 0, 0.2);
   }
 
   &__media {
@@ -27,16 +27,22 @@
     aspect-ratio: 1;
     background-color: rgba(61, 44, 0, 0.06);
     overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(61, 44, 0, 0.1);
+    transition: box-shadow 0.28s ease;
+  }
+
+  &:hover &__media {
+    box-shadow: inset 0 0 0 1px rgba(61, 44, 0, 0.16);
   }
 
   &__img {
     object-fit: cover;
     object-position: center;
-    transition: transform 0.35s ease;
+    transition: transform 0.4s ease;
   }
 
   &:hover &__img {
-    transform: scale(1.04);
+    transform: scale(1.08);
   }
 
   figcaption {

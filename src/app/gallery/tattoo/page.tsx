@@ -1,15 +1,33 @@
 import { GalleryGrid } from "@/components/gallery/GalleryGrid";
 import { GalleryHeader } from "@/components/gallery/GalleryHeader";
 import { GalleryTypeSelector } from "@/components/gallery/GalleryTypeSelector";
+import { FeaturedBlogsSection } from "@/components/home/FeaturedBlogsSection";
+import { galleryPageIntro } from "@/data/gallery-page-intros";
+import {
+  fetchBlogSummaries,
+  fetchBlogVideos,
+  pickLatestBlogVideo,
+} from "@/lib/blog-api";
 import { fetchGalleryItems } from "@/lib/gallery-api";
 
 export default async function GalleryTattooPage() {
-  const items = await fetchGalleryItems();
+  const [items, posts, videos] = await Promise.all([
+    fetchGalleryItems(),
+    fetchBlogSummaries(),
+    fetchBlogVideos(),
+  ]);
+  const latestVideo = pickLatestBlogVideo(videos);
+
   return (
     <>
-      <GalleryHeader title="Tattoo gallery" />
+      <GalleryHeader title="Tattoo gallery" intro={galleryPageIntro.tattoo} />
       <GalleryTypeSelector />
       <GalleryGrid items={items} category="tattoo" />
+      <FeaturedBlogsSection
+        posts={posts}
+        latestVideo={latestVideo}
+        className="gallery-page__featured"
+      />
     </>
   );
 }

@@ -1,4 +1,4 @@
-/** First 11 agreement checkboxes (order matches API ack_* fields). */
+/** Eleven statements shown as a list; one bulk checkbox sets matching API `ack_*` fields (with photo/release lines). */
 export const piercingConsentMainAcknowledgements: string[] = [
   "I am the person receiving the piercing and I am either at least 16 years old, or I have valid parental/legal guardian consent if under 16.",
   "I confirm that for tongue, nipple, and certain facial piercings, I am at least 18 years old, or I have valid parental or legal guardian consent if I am under 18.",

@@ -43,6 +43,16 @@
     font: inherit;
   }
 
+  .consent-ack-list {
+    margin: 0 0 1rem;
+    padding-left: 1.25rem;
+    line-height: 1.5;
+
+    li {
+      margin-bottom: 0.65rem;
+    }
+  }
+
   .checkbox-container {
     display: flex;
     gap: 0.5rem;

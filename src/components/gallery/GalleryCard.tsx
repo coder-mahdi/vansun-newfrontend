@@ -19,7 +19,9 @@ export function GalleryCard({ item, className }: GalleryCardProps) {
           sizes="(max-width: 519px) 100vw, (max-width: 899px) 50vw, (max-width: 1199px) 33vw, 25vw"
         />
       </div>
-      <figcaption>{item.title}</figcaption>
+      {item.showTitle === true ? (
+        <figcaption>{item.title}</figcaption>
+      ) : null}
     </figure>
   );
 }

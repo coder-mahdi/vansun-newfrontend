@@ -2,7 +2,7 @@
  * Blog posts and videos from Vansun WordPress REST (`vansun/v1`).
  *
  * Blogs: GET `/content/blogs` — core `post` type, `topic` (tattoo|piercing), `tags` / `tag_slugs` for SEO.
- * Videos: GET `/content/videos` — `vansun_video`, `keyword` (focus keyword).
+ * Videos: GET `/content/videos` — returns `[]` when no API URL or no rows (no mock list).
  *
  * Optional: if `NEXT_PUBLIC_CMS_API_URL` is set, single post pages can resolve by real WP `slug`
  * via `GET /wp/v2/posts?slug=...&_embed=1` when the vansun list does not include a slug.
@@ -19,7 +19,6 @@
 import {
   blogPostsBySlug,
   blogSummaries as mockBlogSummaries,
-  mockBlogVideos,
 } from "@/data/blogs";
 import { contentImageUrl } from "@/lib/content-assets";
 import { parseYoutubeId } from "@/lib/youtube";
@@ -530,7 +529,7 @@ export async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
 
 export async function fetchBlogVideos(): Promise<BlogVideo[]> {
   const base = apiBase();
-  if (!base) return [...mockBlogVideos];
+  if (!base) return [];
 
   try {
     const payload = await contentGet<unknown>("/content/videos", {
@@ -540,9 +539,20 @@ export async function fetchBlogVideos(): Promise<BlogVideo[]> {
     const out = rows
       .map(normalizeVideoRow)
       .filter(Boolean) as BlogVideo[];
-    if (out.length > 0) return out;
+    return out;
   } catch {
-    /* mock */
+    return [];
   }
-  return [...mockBlogVideos];
+}
+
+/** Newest `publishedAt` first; first clip for “latest video” embeds. */
+export function pickLatestBlogVideo(
+  videos: BlogVideo[]
+): BlogVideo | undefined {
+  if (videos.length === 0) return undefined;
+  return [...videos].sort((a, b) => {
+    const da = a.publishedAt ?? "";
+    const db = b.publishedAt ?? "";
+    return db.localeCompare(da);
+  })[0];
 }
