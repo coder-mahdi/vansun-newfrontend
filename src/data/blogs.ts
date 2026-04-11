@@ -1,6 +1,6 @@
 import { devCmsAsset } from "@/lib/content-assets";
 
-import type { BlogPost, BlogSummary, BlogVideo, FeaturedLatestVideo } from "@/types/blog";
+import type { BlogPost, BlogSummary } from "@/types/blog";
 
 type BlogSeed = Omit<BlogSummary, "coverImageUrl"> & {
   coverFile?: string;
@@ -81,68 +81,3 @@ export const blogPostsBySlug: Record<string, BlogPost> = Object.fromEntries(
     },
   ])
 );
-
-/** Mock video list when GET /blog-videos is unavailable (newest first). */
-export const mockBlogVideos: BlogVideo[] = [
-  {
-    id: "mv-1",
-    title: "Studio tour: piercing setup",
-    excerpt: "A walkthrough of how we prep the room and sterilize jewellery before your appointment.",
-    keyword: "piercing",
-    youtubeId: "jNQXAC9IVRw",
-    category: "piercing",
-    publishedAt: "2026-03-20",
-  },
-  {
-    id: "mv-2",
-    title: "Tattoo healing week one",
-    excerpt: "What to expect in the first seven days and what to avoid while your piece settles.",
-    keyword: "aftercare",
-    youtubeId: "dQw4w9WgXcQ",
-    category: "tattoo",
-    publishedAt: "2026-03-18",
-  },
-  {
-    id: "mv-3",
-    title: "Choosing safe jewellery",
-    excerpt: "Materials we trust for initial piercings and why it matters for healing.",
-    keyword: "jewelry",
-    youtubeId: "jNQXAC9IVRw",
-    category: "piercing",
-    publishedAt: "2026-02-01",
-  },
-  {
-    id: "mv-4",
-    title: "Before your first tattoo",
-    excerpt: "Sleep, food, and ID: quick tips so your session starts smoothly.",
-    keyword: "first tattoo",
-    youtubeId: "dQw4w9WgXcQ",
-    category: "tattoo",
-    publishedAt: "2026-01-25",
-  },
-  {
-    id: "mv-5",
-    title: "Aftercare FAQ",
-    excerpt: "Answers to the questions we hear most about showers, sports, and sun.",
-    keyword: "faq",
-    youtubeId: "jNQXAC9IVRw",
-    category: "tattoo",
-    publishedAt: "2025-12-10",
-  },
-  {
-    id: "mv-6",
-    title: "Downtown Vancouver visit",
-    excerpt: "Parking, transit, and how to find our door on Granville.",
-    keyword: "vancouver",
-    youtubeId: "dQw4w9WgXcQ",
-    category: "tattoo",
-    publishedAt: "2025-11-05",
-  },
-];
-
-/** Home “latest video” block; set `youtubeId` when you have a real upload. */
-export const featuredLatestVideo: FeaturedLatestVideo = {
-  title: "Latest from Vansun",
-  youtubeId: undefined,
-  thumbnailLocal: "blog-latest-video.jpg",
-};

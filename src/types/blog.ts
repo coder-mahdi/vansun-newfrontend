@@ -21,14 +21,6 @@ export type BlogPost = BlogSummary & {
   content: string;
 };
 
-export type FeaturedLatestVideo = {
-  title: string;
-  /** YouTube video ID for embed; omit if not set yet. */
-  youtubeId?: string;
-  /** Thumbnail in `public/dev-cms/` when not using YouTube embed. */
-  thumbnailLocal?: string;
-};
-
 export type BlogVideo = {
   id: string;
   title: string;

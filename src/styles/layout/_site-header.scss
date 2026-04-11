@@ -25,15 +25,28 @@
   }
 
   &__brand {
+    position: relative;
     justify-self: start;
-    font-family: $font-primary;
-    font-weight: $font-weight-bold;
-    font-size: 1.1rem;
-    letter-spacing: $letter-spacing-tight;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    min-width: 2rem;
     color: $color-light-hex;
+    text-decoration: none;
 
     &:hover {
       opacity: 0.85;
+    }
+  }
+
+  &__brand-img {
+    display: block;
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+
+    @media (max-width: 768px) {
+      height: 35px;
     }
   }
 

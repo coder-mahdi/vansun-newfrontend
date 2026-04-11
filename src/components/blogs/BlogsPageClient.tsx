@@ -127,55 +127,51 @@ export function BlogsPageClient({
         ) : null}
       </section>
 
-      <section
-        className="blogs-page__videos"
-        aria-labelledby="blogs-videos-heading"
-      >
-        <h2 id="blogs-videos-heading" className="blogs-page__section-title">
-          Videos
-        </h2>
-        {latestVideos.length === 0 ? (
-          <p className="blogs-page__videos-empty">No videos yet.</p>
-        ) : (
-          <>
-            <ul className="blogs-page__video-list">
-              {latestVideos.map((v) => (
-                <li key={v.id} className="blogs-page__video-item">
-                  <BlogVideoBlock video={v} />
-                </li>
-              ))}
-            </ul>
+      {videos.length > 0 ? (
+        <section
+          className="blogs-page__videos"
+          aria-labelledby="blogs-videos-heading"
+        >
+          <h2 id="blogs-videos-heading" className="blogs-page__section-title">
+            Videos
+          </h2>
+          <ul className="blogs-page__video-list">
+            {latestVideos.map((v) => (
+              <li key={v.id} className="blogs-page__video-item">
+                <BlogVideoBlock video={v} />
+              </li>
+            ))}
+          </ul>
 
-            {hasOlderVideos ? (
-              <>
-                <button
-                  type="button"
-                  className="blogs-page__show-more"
-                  aria-expanded={videosExpanded}
-                  aria-controls="blogs-videos-more"
-                  onClick={() => setVideosExpanded((e) => !e)}
+          {hasOlderVideos ? (
+            <>
+              <button
+                type="button"
+                className="blogs-page__show-more"
+                aria-expanded={videosExpanded}
+                aria-controls="blogs-videos-more"
+                onClick={() => setVideosExpanded((e) => !e)}
+              >
+                {videosExpanded ? "Show less" : "Show more"}
+              </button>
+              {videosExpanded ? (
+                <div
+                  id="blogs-videos-more"
+                  className="blogs-page__videos-more"
                 >
-                  {videosExpanded ? "Show less" : "Show more"}
-                </button>
-                {videosExpanded ? (
-                  <div
-                    id="blogs-videos-more"
-                    className="blogs-page__videos-more"
-                  >
-                    <ul className="blogs-page__video-list blogs-page__video-list--more">
-                      {olderVideos.map((v) => (
-                        <li key={v.id} className="blogs-page__video-item">
-                          <BlogVideoBlock video={v} />
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-              </>
-            ) : null}
-          </>
-        )}
-      </section>
+                  <ul className="blogs-page__video-list blogs-page__video-list--more">
+                    {olderVideos.map((v) => (
+                      <li key={v.id} className="blogs-page__video-item">
+                        <BlogVideoBlock video={v} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </>
+          ) : null}
+        </section>
+      ) : null}
     </div>
   );
 }

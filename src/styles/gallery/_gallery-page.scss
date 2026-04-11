@@ -12,4 +12,10 @@
   @media (min-width: 768px) {
     padding: 2.5rem 2rem 5rem;
   }
+
+  &__featured {
+    margin-top: 3rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid rgba($color-primary-hex, 0.12);
+  }
 }

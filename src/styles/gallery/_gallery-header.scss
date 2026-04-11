@@ -19,4 +19,13 @@
     letter-spacing: -0.02em;
     color: $color-primary;
   }
+
+  &__intro {
+    margin: 1.25rem auto 0;
+    max-width: 42rem;
+    font-size: $font-size-base;
+    line-height: $line-height-loose;
+    color: rgba($color-primary-hex, 0.92);
+    font-weight: $font-weight-regular;
+  }
 }
