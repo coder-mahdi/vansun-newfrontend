@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import {
+  applyBookingListOccupancyToShopSlots,
   buildAvailableDatesFromVansunDays,
   buildHalfHourSlotsForVansunDay,
-  filterSlotsByBookedStarts,
   filterSlotsBySameDayMinimumLead,
   vansunDaysHasOpenSlotsForService,
   type VansunResolvedDayRow,
@@ -167,12 +167,15 @@ export function useBookingSchedule(
       setScheduleError(null);
       (async () => {
         try {
-          const booked = await fetchShopBookedSlotStartsForDate(selectedDate);
+          // 1) Shop hours: half-hour grid from resolved working-hours `days` for this service.
           const dayRow = vansunDays.find((d) => d.date === selectedDate);
-          let slots = buildHalfHourSlotsForVansunDay(dayRow, service);
-          if (booked !== null && booked.length > 0) {
-            slots = filterSlotsByBookedStarts(slots, booked);
-          }
+          const shopSlots = buildHalfHourSlotsForVansunDay(dayRow, service);
+          // 2) Bookings list: remove starts returned by booked-slots (vansun_booking posts).
+          const bookedStarts = await fetchShopBookedSlotStartsForDate(
+            selectedDate,
+            service
+          );
+          let slots = applyBookingListOccupancyToShopSlots(shopSlots, bookedStarts);
           slots = filterSlotsBySameDayMinimumLead(slots, selectedDate);
           if (!cancelled) setAvailableTimeSlots(slots);
         } catch (e) {
@@ -197,12 +200,18 @@ export function useBookingSchedule(
       setScheduleError(null);
       (async () => {
         try {
-          const times = await fetchAvailableBookingTimes(service, selectedDate);
-          if (!cancelled) {
-            setAvailableTimeSlots(
-              filterSlotsBySameDayMinimumLead(times, selectedDate)
-            );
-          }
+          const [shopSlots, bookedStarts] = await Promise.all([
+            fetchAvailableBookingTimes(service, selectedDate),
+            fetchShopBookedSlotStartsForDate(selectedDate, service),
+          ]);
+          if (cancelled) return;
+          let slots = applyBookingListOccupancyToShopSlots(
+            shopSlots,
+            bookedStarts
+          );
+          setAvailableTimeSlots(
+            filterSlotsBySameDayMinimumLead(slots, selectedDate)
+          );
         } catch (e) {
           if (!cancelled) {
             setScheduleError(

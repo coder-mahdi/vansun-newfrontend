@@ -1,3 +1,5 @@
+import { getBookingV1Base } from "@/lib/booking-v1";
+
 export type JewelryTier = "basic" | "standard" | "premium" | "pro-premium";
 export type JewelryUsageArea = "face-and-body" | "lips" | "ear";
 
@@ -13,15 +15,6 @@ type JewelryStoreResponse = {
   grouped?: unknown;
 };
 
-function cmsBase(): string {
-  return (
-    process.env.NEXT_PUBLIC_CMS_API_URL?.trim() ||
-    process.env.NEXT_PUBLIC_CMS_SITE_URL?.trim() ||
-    process.env.NEXT_PUBLIC_API_URL?.trim() ||
-    ""
-  );
-}
-
 function asRecord(v: unknown): Record<string, unknown> | null {
   return v && typeof v === "object" ? (v as Record<string, unknown>) : null;
 }
@@ -33,6 +26,8 @@ function normalizeTier(raw: unknown): JewelryTier | null {
   if (s === "basic") return "basic";
   if (s === "standard") return "standard";
   if (s === "premium") return "premium";
+  /** WP Jewelry Store CPT uses slug `pro`; booking UI uses `pro-premium`. */
+  if (s === "pro") return "pro-premium";
   if (s === "pro-premium" || s === "pro_premium" || s === "propremium") {
     return "pro-premium";
   }
@@ -51,24 +46,48 @@ function normalizeArea(raw: unknown): JewelryUsageArea | null {
   return null;
 }
 
+function imageUrlFromRow(o: Record<string, unknown>): string {
+  const direct = String(o.image_url ?? "").trim();
+  if (direct) return direct;
+  const main = asRecord(o.main_image);
+  if (main) {
+    const u = String(main.url ?? "").trim();
+    if (u) return u;
+  }
+  return "";
+}
+
+function usageFieldsFromRow(o: Record<string, unknown>): unknown[] {
+  const out: unknown[] = [];
+  if (Array.isArray(o.usage_areas)) out.push(...o.usage_areas);
+  else if (typeof o.usage_areas === "string") {
+    out.push(
+      ...String(o.usage_areas)
+        .split(",")
+        .map((s) => s.trim())
+    );
+  }
+  if (Array.isArray(o.placements)) out.push(...o.placements);
+  else if (typeof o.placements === "string") {
+    out.push(
+      ...String(o.placements)
+        .split(",")
+        .map((s) => s.trim())
+    );
+  }
+  return out;
+}
+
 function normalizeItem(row: unknown): JewelryStoreItem | null {
   const o = asRecord(row);
   if (!o) return null;
-  const imageUrl = String(o.image_url ?? "").trim();
+  const imageUrl = imageUrlFromRow(o);
   const rawCode = String(o.code ?? "").trim();
   const fallbackCode = String(o.id ?? o.title ?? "").trim();
   const code = rawCode || fallbackCode;
   const tier = normalizeTier(o.tier);
-  const usageRaw = Array.isArray(o.usage_areas)
-    ? o.usage_areas
-    : typeof o.usage_areas === "string"
-      ? String(o.usage_areas)
-          .split(",")
-          .map((s) => s.trim())
-      : [];
-  const usageAreas = usageRaw
-    .map(normalizeArea)
-    .filter(Boolean) as JewelryUsageArea[];
+  const usageRaw = usageFieldsFromRow(o);
+  const usageAreas = [...new Set(usageRaw.map(normalizeArea).filter(Boolean))] as JewelryUsageArea[];
   if (!imageUrl || !code || !tier || usageAreas.length === 0) return null;
   return {
     image_url: imageUrl,
@@ -109,9 +128,10 @@ function normalizeFromGrouped(grouped: unknown): JewelryStoreItem[] {
 }
 
 export async function fetchJewelryStoreItems(): Promise<JewelryStoreItem[]> {
-  const base = cmsBase();
+  /** Same host/path as working-hours & booking create (`NEXT_PUBLIC_BOOKING_API_URL` or CMS origin). */
+  const base = getBookingV1Base();
   if (!base) return [];
-  const res = await fetch(`${base}/wp-json/vansun/v1/content/jewelry-store`, {
+  const res = await fetch(`${base}/content/jewelry-store`, {
     method: "GET",
     headers: { Accept: "application/json" },
   });

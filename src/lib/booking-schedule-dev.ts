@@ -8,17 +8,19 @@ function pad2(n: number): string {
 /**
  * Use fake dates/times so the piercing wizard can be tested without CMS.
  *
- * - `NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE=1` (or `true`): **always** mock — including production;
- *   remove this on real deploys or you will always see sample 10:00–17:00 slots.
+ * - If `getBookingV1Base()` is set (real vansun v1 URL), mock is **never** used — otherwise
+ *   `NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE=1` would show sample 10:00–17:00 and skip occupancy.
+ * - `NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE=1` (or `true`): mock when there is no booking base.
  * - Otherwise: only in development when `getBookingV1Base()` is empty (no CMS URL / booking URL).
  */
 export function isBookingScheduleDevMock(): boolean {
+  if (getBookingV1Base().length > 0) return false;
   const force =
     process.env.NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE === "1" ||
     process.env.NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE === "true";
   if (force) return true;
   if (process.env.NODE_ENV !== "development") return false;
-  return getBookingV1Base().length === 0;
+  return true;
 }
 
 /** Next N calendar days as YYYY-MM-DD + short weekday */

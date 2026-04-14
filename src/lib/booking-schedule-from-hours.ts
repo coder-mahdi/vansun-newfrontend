@@ -267,19 +267,88 @@ export function buildAvailableDatesFromWeekly(
 }
 
 export function normalizeSlotStartTime(t: string): string {
-  const m = t.trim().match(/^(\d{1,2}):(\d{2})/);
-  if (!m) return t.trim();
+  const raw = t.trim();
+  const mer = raw.match(
+    /^(\d{1,2}):(\d{2})(?::\d{1,2})?\s*(am|pm|a\.m\.|p\.m\.)\b/i
+  );
+  if (mer) {
+    let h = parseInt(mer[1], 10);
+    const min = parseInt(mer[2], 10);
+    const suf = mer[3].toLowerCase().replace(/\./g, "");
+    const isPm = suf === "pm";
+    const isAm = suf === "am";
+    if (isPm && h !== 12) h += 12;
+    if (isAm && h === 12) h = 0;
+    return `${pad2(h)}:${pad2(min)}`;
+  }
+  const m = raw.match(/^(\d{1,2}):(\d{2})(?::\d{1,2})?/);
+  if (!m) return raw;
   const h = parseInt(m[1], 10);
   const min = parseInt(m[2], 10);
   return `${pad2(h)}:${pad2(min)}`;
+}
+
+/**
+ * All slot-start keys that should be treated as taken, given how bookings sometimes store
+ * "6:00" for 18:00 when the shop grid only offers evening times (no 06:00 row).
+ */
+export function buildTakenSlotStartsSet(
+  bookedStarts: string[],
+  shopSlotStarts: string[]
+): Set<string> {
+  const slotSet = new Set(shopSlotStarts.map((s) => normalizeSlotStartTime(s)));
+  const taken = new Set<string>();
+  for (const b of bookedStarts) {
+    const n = normalizeSlotStartTime(b);
+    taken.add(n);
+    if (!slotSet.has(n)) {
+      const parts = n.match(/^(\d{2}):(\d{2})$/);
+      if (!parts) continue;
+      const h = parseInt(parts[1], 10);
+      const min = parts[2];
+      if (h >= 1 && h <= 11) {
+        const alt = `${pad2(h + 12)}:${min}`;
+        if (slotSet.has(alt)) taken.add(alt);
+      }
+    }
+  }
+  return taken;
 }
 
 export function filterSlotsByBookedStarts(
   slots: HalfHourSlotRow[],
   bookedStarts: string[]
 ): HalfHourSlotRow[] {
-  const taken = new Set(bookedStarts.map(normalizeSlotStartTime));
+  const shopStarts = slots.map((s) => s.time);
+  const taken = buildTakenSlotStartsSet(bookedStarts, shopStarts);
   return slots.filter((s) => !taken.has(normalizeSlotStartTime(s.time)));
+}
+
+/** Union of HH:MM starts from two occupancy sources (e.g. booked-slots + bookings list API). */
+export function mergeOccupiedSlotStartsLists(
+  a: string[] | null,
+  b: string[] | null
+): string[] | null {
+  if (a === null && b === null) return null;
+  const set = new Set<string>();
+  for (const x of a ?? []) set.add(normalizeSlotStartTime(x));
+  for (const x of b ?? []) set.add(normalizeSlotStartTime(x));
+  return [...set].sort();
+}
+
+/**
+ * Step 2 vs shop hours: drop slot rows whose start time appears in existing bookings
+ * (`GET …/shop-schedule/booked-slots`, backed by `vansun_booking` in WordPress).
+ *
+ * @param shopSlots Candidate rows from shop schedule (e.g. {@link buildHalfHourSlotsForVansunDay} or legacy times).
+ * @param bookedStarts Parsed `booked_starts` list; `null` means the occupancy request failed — shop slots are left unchanged.
+ */
+export function applyBookingListOccupancyToShopSlots(
+  shopSlots: HalfHourSlotRow[],
+  bookedStarts: string[] | null
+): HalfHourSlotRow[] {
+  if (bookedStarts === null) return shopSlots;
+  return filterSlotsByBookedStarts(shopSlots, bookedStarts);
 }
 
 /** Same-calendar-day bookings: slot start must be at least this far in the future (local time). */
@@ -411,20 +480,86 @@ export function buildHalfHourSlotsForVansunDay(
   return buildHalfHourSlots(openM, closeM);
 }
 
+function asRecord(v: unknown): Record<string, unknown> | null {
+  return v && typeof v === "object" ? (v as Record<string, unknown>) : null;
+}
+
 /**
- * Booked 30-minute slot starts for a calendar day (tattoo + piercing share the same studio slots).
- * Accepts e.g. { booked_starts: ["10:00"] }, { slots: [...] }, or [{ start: "10:00" }].
+ * Pull a raw array of booked slot starts from common REST / proxy shapes.
+ * Prefer explicit `booked_starts` before generic `slots` / `times`.
+ */
+function extractBookedStartsArray(root: Record<string, unknown>): unknown[] | null {
+  const tryArray = (v: unknown): unknown[] | null =>
+    Array.isArray(v) ? v : null;
+
+  const top = [
+    root.booked_starts,
+    root.bookedStarts,
+    root.booked_starts_30,
+    root.occupied_starts,
+    root.occupiedStarts,
+  ];
+  for (const v of top) {
+    const a = tryArray(v);
+    if (a) return a;
+  }
+
+  for (const wrap of ["data", "result", "payload", "body"] as const) {
+    const inner = asRecord(root[wrap]);
+    if (!inner) continue;
+    const nested = [
+      inner.booked_starts,
+      inner.bookedStarts,
+      inner.slots,
+      inner.times,
+    ];
+    for (const v of nested) {
+      const a = tryArray(v);
+      if (a) return a;
+    }
+  }
+
+  for (const k of ["bookings", "items", "rows"] as const) {
+    const a = tryArray(root[k]);
+    if (a) return a;
+  }
+
+  for (const k of ["slots", "times", "booked", "occupied"] as const) {
+    const a = tryArray(root[k]);
+    if (a) return a;
+  }
+
+  return null;
+}
+
+/**
+ * Booked 30-minute slot starts for a calendar day (from `GET …/shop-schedule/booked-slots`).
+ * Accepts e.g. `{ booked_starts: ["10:00"] }`, `{ data: { booked_starts: [] } }`,
+ * `{ slots: [...] }`, or `[{ start: "10:00" }]`.
  */
 export function parseBookedSlotStartsPayload(data: unknown): string[] | null {
+  if (Array.isArray(data)) {
+    const arr = data;
+    const out: string[] = [];
+    for (const item of arr) {
+      if (typeof item === "string") out.push(item);
+      else if (item && typeof item === "object") {
+        const o = item as Record<string, unknown>;
+        const s =
+          o.start ??
+          o.time ??
+          o.booking_time ??
+          o.slot_start ??
+          o.slot_time ??
+          o.appointment_time;
+        if (typeof s === "string") out.push(s);
+      }
+    }
+    return out;
+  }
   if (!data || typeof data !== "object") return null;
   const root = data as Record<string, unknown>;
-  const arr =
-    root.booked_starts ??
-    root.booked_starts_30 ??
-    root.slots ??
-    root.booked ??
-    root.times ??
-    root.occupied;
+  const arr = extractBookedStartsArray(root);
   if (!Array.isArray(arr)) return null;
   const out: string[] = [];
   for (const item of arr) {
@@ -438,7 +573,9 @@ export function parseBookedSlotStartsPayload(data: unknown): string[] | null {
         o.start ??
         o.time ??
         o.booking_time ??
-        o.slot_start;
+        o.slot_start ??
+        o.slot_time ??
+        o.appointment_time;
       if (typeof s === "string") out.push(s);
     }
   }

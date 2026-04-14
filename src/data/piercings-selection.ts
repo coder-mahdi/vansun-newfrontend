@@ -21,9 +21,30 @@ export const PIERCING_SERVICE_BASE_CAD = 39;
 /** Lip / mouth sheet: price is per piercing (each hole), e.g. ×2 in cart = 2× this. */
 export const PIERCING_LIP_CAD = 19;
 export const PIERCING_PRICE_BY_ID_CAD: Record<string, number> = {
+  "angel-bites": 75,
   "anti-eyebrow": 59,
-  tongue: 59,
+  "anti-tragus": 59,
+  ashley: 45,
+  daith: 59,
+  "hidden-helix": 45,
+  "inverted-lobe": 49,
+  jestrum: 49,
+  labret: 39,
+  lobe: 19,
+  medusa: 45,
+  monroe: 45,
+  navel: 45,
   nipple: 59,
+  rook: 49,
+  septum: 45,
+  "shark-bites": 75,
+  "stacked-lobe": 19,
+  "snake-bites": 75,
+  tongue: 59,
+  tragus: 45,
+  "upper-lobe": 19,
+  "vertical-helix": 45,
+  "vertical-labret": 59,
 };
 
 export const PIERCING_IMAGE_META: Record<

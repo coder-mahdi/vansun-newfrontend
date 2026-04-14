@@ -2,6 +2,15 @@ import { cn } from "@/lib/helpers";
 import type { GalleryCategory, GalleryItem } from "@/types/gallery";
 import { GalleryCard } from "./GalleryCard";
 
+function shuffled<T>(items: T[]): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 type GalleryGridProps = {
   items: GalleryItem[];
   category?: GalleryCategory;
@@ -16,12 +25,13 @@ export function GalleryGrid({
   categories,
   className,
 }: GalleryGridProps) {
-  const list =
+  const filtered =
     categories && categories.length > 0
       ? items.filter((i) => categories.includes(i.category))
       : category
         ? items.filter((i) => i.category === category)
         : items;
+  const list = shuffled(filtered);
   return (
     <div className={cn("gallery-grid", className)}>
       {list.length === 0 ? (

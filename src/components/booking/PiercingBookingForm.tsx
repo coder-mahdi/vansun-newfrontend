@@ -774,7 +774,13 @@ export function PiercingBookingForm({
                 <p className="booking-wizard__sub">Loading jewelry…</p>
               ) : visibleJewelryItems.length === 0 ? (
                 <p className="booking-wizard__sub">
-                  For this piercing, this item is currently unavailable.
+                  {jewelryItems.length === 0
+                    ? getBookingV1Base()
+                      ? "No studio jewelry is available to choose yet, or the list could not be loaded."
+                      : "Studio jewelry is unavailable because the booking API URL is not configured."
+                    : filteredJewelryItems.length === 0
+                      ? "No jewelry in the catalog matches your piercing placement and the tier you selected. Try another tier, or ask the studio to tag pieces for these areas in WordPress."
+                      : "Jewelry thumbnails failed to load. Try again, pick another piece, or choose “bring your own”."}
                 </p>
               ) : (
                 <div className="booking-wizard__jewelry-grid">
