@@ -1,14 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import {
-  homeAboutBody,
-  homeAboutImageUrl,
-  homeAboutTitle,
-} from "@/data/home-about";
 import { cn } from "@/lib/helpers";
 
-export function AboutUsSection({ className }: { className?: string }) {
+export function AboutUsSection({
+  className,
+  title,
+  body,
+  imageUrl,
+  imageAlt,
+}: {
+  className?: string;
+  title: string;
+  body: string;
+  imageUrl: string;
+  imageAlt?: string;
+}) {
   return (
     <section
       className={cn("about-us-section", className)}
@@ -17,8 +24,8 @@ export function AboutUsSection({ className }: { className?: string }) {
       <div className="about-container">
         <div className="about-image">
           <Image
-            src={homeAboutImageUrl}
-            alt="Vansun Studio"
+            src={imageUrl}
+            alt={imageAlt?.trim() || title}
             fill
             className="about-image__img"
             sizes="(min-width: 1023px) 50vw, 100vw"
@@ -27,9 +34,9 @@ export function AboutUsSection({ className }: { className?: string }) {
         </div>
         <div className="about-text">
           <h2 id="home-about-title" className="about-title">
-            {homeAboutTitle}
+            {title}
           </h2>
-          <p className="about-body">{homeAboutBody}</p>
+          <p className="about-body">{body}</p>
           <Link href="/about" className="about-more">
             Learn more
           </Link>

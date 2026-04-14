@@ -1,0 +1,139 @@
+.terms-and-conditions {
+  background-color: $color-primary;
+  color: $color-light;
+  min-height: 100%;
+
+  &__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: $color-light;
+  }
+
+  &__heading {
+    font-size: 2.5rem;
+    text-align: center;
+    margin: 0 0 2.5rem;
+    font-weight: 600;
+    color: inherit;
+    letter-spacing: 0.05em;
+    font-family: $font-heading;
+  }
+
+  &__section {
+    margin-bottom: 4rem;
+    background: $color-primary;
+    border: 1px solid $color-light;
+    border-radius: 8px;
+    padding: 2rem;
+
+    &:last-of-type {
+      margin-bottom: 0;
+    }
+  }
+
+  &__title {
+    font-size: 2rem;
+    margin: 0 0 2rem;
+    color: $color-light;
+    text-align: center;
+    font-weight: 500;
+    font-family: $font-heading;
+  }
+
+  &__content {
+    font-family: $font-primary;
+
+    h3 {
+      font-size: 1.5rem;
+      margin: 2rem 0 1rem;
+      color: $color-light;
+      font-weight: 500;
+      font-family: $font-heading;
+    }
+
+    p {
+      margin: 0 0 1rem;
+      line-height: 1.6;
+      color: $color-light;
+    }
+
+    ul {
+      margin: 0 0 1rem;
+      padding-left: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+      color: $color-light;
+    }
+
+    a {
+      color: $color-light;
+      text-decoration: none;
+      border-bottom: 1px solid $color-light;
+      transition: opacity 0.3s ease;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  &__error {
+    color: #ff6b6b;
+    text-align: center;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .terms-and-conditions {
+    &__container {
+      padding: 1.5rem;
+    }
+
+    &__section {
+      padding: 1.5rem;
+    }
+
+    &__title {
+      font-size: 1.75rem;
+    }
+
+    &__heading {
+      font-size: 2.1rem;
+      margin-bottom: 2rem;
+    }
+
+    &__content h3 {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .terms-and-conditions {
+    &__container {
+      padding: 1rem;
+    }
+
+    &__section {
+      padding: 1rem;
+    }
+
+    &__title {
+      font-size: 1.5rem;
+    }
+
+    &__heading {
+      font-size: 1.8rem;
+      margin-bottom: 1.75rem;
+    }
+
+    &__content h3 {
+      font-size: 1.1rem;
+    }
+  }
+}

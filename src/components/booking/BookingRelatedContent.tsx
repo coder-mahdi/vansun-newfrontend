@@ -5,33 +5,36 @@ import { fetchBlogSummaries, fetchBlogVideos } from "@/lib/blog-api";
 import { cn } from "@/lib/helpers";
 import type { BlogCategory, BlogSummary, BlogVideo } from "@/types/blog";
 
+/** Only posts in this category, newest first (booking pages stay on-topic). */
 function pickLatestPostsForBooking(
   posts: BlogSummary[],
-  preferCategory: BlogCategory,
+  category: BlogCategory,
   limit: number
 ): BlogSummary[] {
   const byDate = (a: BlogSummary, b: BlogSummary) =>
     b.publishedAt.localeCompare(a.publishedAt);
-  const preferred = [...posts]
-    .filter((p) => p.category === preferCategory)
-    .sort(byDate);
-  const other = [...posts]
-    .filter((p) => p.category !== preferCategory)
-    .sort(byDate);
-  return [...preferred, ...other].slice(0, limit);
+  return [...posts]
+    .filter((p) => p.category === category)
+    .sort(byDate)
+    .slice(0, limit);
 }
 
+/** Only videos tagged for this category, newest first when `publishedAt` exists. */
 function pickLatestVideosForBooking(
   videos: BlogVideo[],
-  preferCategory: BlogCategory,
+  category: BlogCategory,
   limit: number
 ): BlogVideo[] {
-  const preferred = videos.filter((v) => v.category === preferCategory);
-  const uncategorized = videos.filter((v) => v.category === undefined);
-  const other = videos.filter(
-    (v) => v.category !== undefined && v.category !== preferCategory
-  );
-  return [...preferred, ...uncategorized, ...other].slice(0, limit);
+  const byDate = (a: BlogVideo, b: BlogVideo) => {
+    const ad = a.publishedAt ?? "";
+    const bd = b.publishedAt ?? "";
+    if (ad !== bd) return bd.localeCompare(ad);
+    return b.id.localeCompare(a.id);
+  };
+  return [...videos]
+    .filter((v) => v.category === category)
+    .sort(byDate)
+    .slice(0, limit);
 }
 
 function youtubeThumbUrl(youtubeId: string): string {
@@ -43,7 +46,7 @@ type BookingRelatedContentProps = {
   className?: string;
 };
 
-/** Below booking FAQ: two blog cards + two video teasers (thumbnail + external link, no embed). */
+/** Below booking FAQ: two blog cards; video teasers only when `/content/videos` returns items. */
 export async function BookingRelatedContent({
   preferCategory,
   className,
@@ -75,42 +78,47 @@ export async function BookingRelatedContent({
         </p>
       </section>
 
-      <section
-        className="booking-related__block booking-related__block--videos"
-        aria-labelledby="booking-related-videos-heading"
-      >
-        <h2 id="booking-related-videos-heading" className="booking-related__title">
-          Quick guides before your visit
-        </h2>
-        <div className="booking-related__grid booking-related__grid--videos">
-          {latestVideos.map((v) => (
-            <article key={v.id} className="booking-related-video">
-              <a
-                href={`https://www.youtube.com/watch?v=${encodeURIComponent(v.youtubeId)}`}
-                className="booking-related-video__link"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <div className="booking-related-video__media">
-                  <Image
-                    src={youtubeThumbUrl(v.youtubeId)}
-                    alt=""
-                    width={480}
-                    height={360}
-                    className="booking-related-video__img"
-                    sizes="(min-width: 900px) 400px, (min-width: 600px) 45vw, 100vw"
-                  />
-                  <span className="booking-related-video__play" aria-hidden>
-                    ▶
-                  </span>
-                </div>
-                <h3 className="booking-related-video__title">{v.title}</h3>
-              </a>
-              <p className="booking-related-video__excerpt">{v.excerpt}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      {latestVideos.length > 0 ? (
+        <section
+          className="booking-related__block booking-related__block--videos"
+          aria-labelledby="booking-related-videos-heading"
+        >
+          <h2
+            id="booking-related-videos-heading"
+            className="booking-related__title"
+          >
+            Quick guides before your visit
+          </h2>
+          <div className="booking-related__grid booking-related__grid--videos">
+            {latestVideos.map((v) => (
+              <article key={v.id} className="booking-related-video">
+                <a
+                  href={`https://www.youtube.com/watch?v=${encodeURIComponent(v.youtubeId)}`}
+                  className="booking-related-video__link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="booking-related-video__media">
+                    <Image
+                      src={youtubeThumbUrl(v.youtubeId)}
+                      alt=""
+                      width={480}
+                      height={360}
+                      className="booking-related-video__img"
+                      sizes="(min-width: 900px) 400px, (min-width: 600px) 45vw, 100vw"
+                    />
+                    <span className="booking-related-video__play" aria-hidden>
+                      ▶
+                    </span>
+                  </div>
+                  <h3 className="booking-related-video__title">{v.title}</h3>
+                </a>
+                <p className="booking-related-video__excerpt">{v.excerpt}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

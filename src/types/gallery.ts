@@ -6,4 +6,6 @@ export type GalleryItem = {
   category: GalleryCategory;
   imageSrc: string;
   imageAlt: string;
+  /** From WordPress `show_title`; caption only when `true` (default off in CMS). */
+  showTitle?: boolean;
 };

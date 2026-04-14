@@ -1,2 +1,93 @@
 .blog-hero {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 1.75rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(61, 44, 0, 0.12);
+
+  @media (min-width: 768px) {
+    padding: 3rem 2rem 2rem;
+  }
+
+  h1 {
+    font-family: $font-heading;
+    font-size: clamp(1.85rem, 5vw, 2.85rem);
+    font-weight: $font-weight-bold;
+    line-height: $line-height-tight;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.65rem;
+    color: $color-primary;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 1rem;
+    margin: 0 0 1.25rem;
+    font-size: 0.9375rem;
+    color: rgba(61, 44, 0, 0.72);
+  }
+
+  time {
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-base;
+  }
+
+  &__cover {
+    position: relative;
+    width: 100%;
+    max-width: 28rem;
+    margin: 0 auto;
+    aspect-ratio: 4 / 3;
+    background-color: rgba(61, 44, 0, 0.08);
+    overflow: hidden;
+    border-radius: 6px;
+
+    &--empty {
+      aspect-ratio: 4 / 3;
+      min-height: 10rem;
+      border: 1px solid rgba(61, 44, 0, 0.18);
+      background-color: rgba(250, 255, 238, 0.9);
+      background-image:
+        radial-gradient(
+          circle at 1px 1px,
+          rgba(61, 44, 0, 0.08) 1px,
+          transparent 0
+        );
+      background-size: 16px 16px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  &__cover-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 1.25rem 1rem;
+    color: rgba(61, 44, 0, 0.5);
+  }
+
+  &__cover-placeholder-icon {
+    width: clamp(4rem, 12vw, 5rem);
+    height: auto;
+    flex-shrink: 0;
+  }
+
+  &__cover-placeholder-text {
+    font-size: 0.8125rem;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-wide;
+    text-transform: $text-transform-uppercase;
+    color: rgba(61, 44, 0, 0.42);
+  }
+
+  &__cover-img {
+    object-fit: cover;
+  }
 }

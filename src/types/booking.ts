@@ -10,12 +10,23 @@ export type PiercingBookingStep1Values = {
 };
 
 export type PiercingBookingWizardPayload = PiercingBookingStep1Values & {
-  piercingTypeId: string;
-  jewelryId: string;
+  /** Count per placement id (canonical). */
+  piercingQuantities: Record<string, number>;
+  /** Expanded list (same id repeated per unit); kept for API / legacy consumers. */
+  piercingIds: string[];
+  jewelryChoice: "change-jewelry" | "bring-own";
+  jewelryTier: "basic" | "standard" | "premium" | "pro-premium" | null;
+  jewelryCode: string | null;
+  /** Resolved from jewelry store API when studio jewelry is chosen. */
+  jewelryImageUrl: string | null;
   aftercareKit: boolean;
   notes: string;
-  /** Sum of service fee + jewelry + optional aftercare (CAD) */
+  /** Sum of per-piercing service + optional aftercare (CAD) */
   totalCad: number;
+  /** API compat: use `multi` with `piercingIds`. */
+  piercingTypeId: string;
+  /** API compat: in-studio jewelry */
+  jewelryId: string;
 };
 
 export type PiercingBookingPayload = {

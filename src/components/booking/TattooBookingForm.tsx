@@ -5,18 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { tattooStyles } from "@/data/booking";
+import { useBookingSchedule } from "@/hooks/use-booking-schedule";
 import { cn } from "@/lib/helpers";
-import {
-  getDevMockBookingDates,
-  getDevMockBookingTimeSlots,
-  isBookingScheduleDevMock,
-} from "@/lib/booking-schedule-dev";
-import {
-  fetchAvailableBookingDates,
-  fetchAvailableBookingTimes,
-  getBookingV1Base,
-  postBookingCreate,
-} from "@/lib/booking-v1";
+import { getBookingV1Base, postBookingCreate } from "@/lib/booking-v1";
 import { RECAPTCHA_SITE_KEY } from "@/lib/recaptcha";
 import type {
   TattooBookingStep1Values,
@@ -62,90 +53,34 @@ export function TattooBookingForm({
   const [time, setTime] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
 
-  const [availableDates, setAvailableDates] = useState<
-    { date: string; day: string }[]
-  >([]);
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<
-    { time: string; end_time: string }[]
-  >([]);
-  const [datesLoading, setDatesLoading] = useState(false);
-  const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const apiConfigured = getBookingV1Base().length > 0;
-  const scheduleDevMock = isBookingScheduleDevMock();
-  const scheduleUsable = apiConfigured || scheduleDevMock;
-
-  useEffect(() => {
-    if (scheduleDevMock) {
-      setAvailableDates(getDevMockBookingDates());
-      setDatesLoading(false);
-      setScheduleError(null);
-      return;
-    }
-    if (!apiConfigured) {
-      setAvailableDates([]);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      setDatesLoading(true);
-      setScheduleError(null);
-      try {
-        const dates = await fetchAvailableBookingDates("tattoo");
-        if (!cancelled) setAvailableDates(dates);
-      } catch (e) {
-        if (!cancelled) {
-          setScheduleError(
-            e instanceof Error ? e.message : "Could not load available dates."
-          );
-          setAvailableDates([]);
-        }
-      } finally {
-        if (!cancelled) setDatesLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [scheduleDevMock, apiConfigured]);
+  const {
+    availableDates,
+    availableTimeSlots,
+    datesLoading,
+    timesLoading,
+    scheduleError,
+    scheduleUsable,
+    scheduleDevMock,
+    scheduleMode,
+  } = useBookingSchedule("tattoo", date);
 
   useEffect(() => {
     if (!date) {
-      setAvailableTimeSlots([]);
       setTime("");
       return;
     }
-    if (scheduleDevMock) {
-      setAvailableTimeSlots(getDevMockBookingTimeSlots());
-      setScheduleError(null);
-      return;
-    }
-    if (!apiConfigured) {
-      setAvailableTimeSlots([]);
+    if (
+      time &&
+      !timesLoading &&
+      availableTimeSlots.every((s) => s.time !== time)
+    ) {
       setTime("");
-      return;
     }
-    let cancelled = false;
-    (async () => {
-      setScheduleError(null);
-      try {
-        const times = await fetchAvailableBookingTimes("tattoo", date);
-        if (!cancelled) setAvailableTimeSlots(times);
-      } catch (e) {
-        if (!cancelled) {
-          setScheduleError(
-            e instanceof Error ? e.message : "Could not load time slots."
-          );
-          setAvailableTimeSlots([]);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [date, scheduleDevMock, apiConfigured]);
+  }, [date, time, timesLoading, availableTimeSlots]);
 
   const handleDesignUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -256,6 +191,24 @@ export function TattooBookingForm({
     }
   };
 
+  const resetWizard = () => {
+    setPhase("wizard");
+    setStep(1);
+    setStep1(null);
+    setTattooStyle(null);
+    setDesign(null);
+    setExplanation("");
+    setFullName("");
+    setEmail("");
+    setPhone("");
+    setDate("");
+    setTime("");
+    setTermsAccepted(false);
+    setSubmitError(null);
+    setSubmitting(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   if (phase === "success") {
     return (
       <div className={cn("booking-page__success-message", className)}>
@@ -263,10 +216,13 @@ export function TattooBookingForm({
           Your tattoo appointment request was received.
           <br />
           <br />
-          If you need to cancel, please email us at least 5 hours before your
+          If you need to cancel, please email us at least 1 hour before your
           scheduled time.
         </p>
         <div className="success-buttons">
+          <button type="button" className="home-btn" onClick={resetWizard}>
+            Book again
+          </button>
           <a className="email-btn" href="mailto:info@vansunstudio.com">
             Send email
           </a>
@@ -381,7 +337,10 @@ export function TattooBookingForm({
                 id="tattoo-date"
                 name="date"
                 value={date}
-                onChange={(ev) => setDate(ev.target.value)}
+                onChange={(ev) => {
+                  setDate(ev.target.value);
+                  setTime("");
+                }}
                 required
                 disabled={!scheduleUsable || datesLoading}
               >
@@ -407,7 +366,9 @@ export function TattooBookingForm({
               !datesLoading &&
               availableDates.length === 0 ? (
                 <small className="booking-page__config-hint">
-                  No dates returned. Check shop schedule for tattoo in the CMS.
+                  {scheduleMode === "working-hours"
+                    ? "No bookable days in the next window — check working hours in the CMS."
+                    : "No dates returned. Check shop schedule for tattoo in the CMS."}
                 </small>
               ) : null}
             </div>
@@ -419,9 +380,21 @@ export function TattooBookingForm({
                 value={time}
                 onChange={(ev) => setTime(ev.target.value)}
                 required
-                disabled={!date || availableTimeSlots.length === 0}
+                disabled={
+                  !date ||
+                  timesLoading ||
+                  (!timesLoading && availableTimeSlots.length === 0)
+                }
               >
-                <option value="">Select a time</option>
+                <option value="">
+                  {!date
+                    ? "Select a date first"
+                    : timesLoading
+                      ? "Loading times…"
+                      : availableTimeSlots.length === 0
+                        ? "No times available"
+                        : "Select a time"}
+                </option>
                 {availableTimeSlots.map((slot) => (
                   <option key={slot.time} value={slot.time}>
                     {slot.time} – {slot.end_time}
@@ -509,10 +482,11 @@ export function TattooBookingForm({
 
       {step === 2 ? (
         <div className="booking-wizard__panel">
-          <h2 className="booking-wizard__heading">Tattoo style</h2>
           <p className="booking-wizard__sub">
-            Pick the direction that best matches your idea; we will refine
-            details together in the studio.
+            Our tattoo stations are fully sterilized, we use disposable
+            single-use needles, and the whole process follows hygienic practices
+            according to Vancouver Coastal Health standards. Our tattoo artists
+            are among the best in Vancouver.
           </p>
           <div
             className="booking-wizard__options"

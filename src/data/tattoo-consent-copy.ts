@@ -1,4 +1,4 @@
-/** Thirteen agreement checkboxes (order matches API `ack_*` fields). */
+/** Thirteen statements shown as a list; one bulk checkbox sets all matching API `ack_*` fields. */
 export const tattooConsentMainAcknowledgements: string[] = [
   "I confirm that I am at least 18 years old, or I have valid parental or legal guardian consent if I am under 18.",
   "I confirm that I am not pregnant, nursing, or suffering from any condition that may affect the healing process of a tattoo.",

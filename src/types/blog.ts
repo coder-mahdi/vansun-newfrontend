@@ -6,22 +6,19 @@ export type BlogSummary = {
   excerpt: string;
   publishedAt: string;
   category: BlogCategory;
-  /** SEO / tag from backend (single keyword or label). */
+  /**
+   * SEO: comma-separated tags from WordPress (`tags` in vansun API), or legacy keyword.
+   * Use `tags` when you need an array for meta keywords.
+   */
   keyword: string;
+  /** WordPress post tags (names), for SEO / meta keywords. */
+  tags?: string[];
   /** Optional cover URL (e.g. from `devCmsAsset` in mock mode). */
   coverImageUrl?: string;
 };
 
 export type BlogPost = BlogSummary & {
   content: string;
-};
-
-export type FeaturedLatestVideo = {
-  title: string;
-  /** YouTube video ID for embed; omit if not set yet. */
-  youtubeId?: string;
-  /** Thumbnail in `public/dev-cms/` when not using YouTube embed. */
-  thumbnailLocal?: string;
 };
 
 export type BlogVideo = {
@@ -33,4 +30,6 @@ export type BlogVideo = {
   youtubeId: string;
   /** When set, booking pages can prefer tattoo vs piercing clips. */
   category?: BlogCategory;
+  /** ISO date string; newest-first on booking “related videos” when set. */
+  publishedAt?: string;
 };

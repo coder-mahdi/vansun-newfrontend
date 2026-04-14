@@ -8,23 +8,26 @@ function pad2(n: number): string {
 /**
  * Use fake dates/times so the piercing wizard can be tested without CMS.
  *
- * - `NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE=1`: always use mock slots (even if API URL is set).
- * - Otherwise: only in `NODE_ENV === 'development'` when no booking API base is configured.
+ * - If `getBookingV1Base()` is set (real vansun v1 URL), mock is **never** used — otherwise
+ *   `NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE=1` would show sample 10:00–17:00 and skip occupancy.
+ * - `NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE=1` (or `true`): mock when there is no booking base.
+ * - Otherwise: only in development when `getBookingV1Base()` is empty (no CMS URL / booking URL).
  */
 export function isBookingScheduleDevMock(): boolean {
+  if (getBookingV1Base().length > 0) return false;
   const force =
     process.env.NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE === "1" ||
     process.env.NEXT_PUBLIC_BOOKING_DEV_MOCK_SCHEDULE === "true";
   if (force) return true;
   if (process.env.NODE_ENV !== "development") return false;
-  return getBookingV1Base().length === 0;
+  return true;
 }
 
 /** Next N calendar days as YYYY-MM-DD + short weekday */
 export function getDevMockBookingDates(count = 12): AvailableDateRow[] {
   const rows: AvailableDateRow[] = [];
   const start = new Date();
-  for (let i = 1; i <= count; i++) {
+  for (let i = 0; i < count; i++) {
     const d = new Date(start);
     d.setDate(d.getDate() + i);
     const y = d.getFullYear();

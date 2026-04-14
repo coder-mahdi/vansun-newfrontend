@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /staff/
+Disallow: /consent-form/
+Allow: /
+
+Sitemap: https://vansunstudio.com/sitemap.xml
+
