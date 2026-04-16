@@ -1,13 +1,13 @@
 Current layout (paths are wired in src/lib/brand-assets.ts and app/layout.tsx):
 
-  brand/logo/logo.png          — header logo (Next reads /brand/logo/logo.png)
+  brand/logo/logo.png          : header logo (Next reads /brand/logo/logo.png)
 
-  brand/favicon/favicon.ico    — classic favicon
-  brand/favicon/favicon.svg    — modern SVG tab icon
+  brand/favicon/favicon.ico    : classic favicon
+  brand/favicon/favicon.svg    : modern SVG tab icon
   brand/favicon/apple-touch-icon.png
   brand/favicon/web-app-manifest-192x192.png
   brand/favicon/web-app-manifest-512x512.png
-  brand/favicon/site.webmanifest — PWA manifest (icon srcs must stay under /brand/favicon/)
+  brand/favicon/site.webmanifest : PWA manifest (icon srcs must stay under /brand/favicon/)
 
 Optional: copy brand/robots.txt to public/robots.txt if you want crawlers to read /robots.txt from the site root.
 

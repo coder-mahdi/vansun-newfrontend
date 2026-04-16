@@ -107,7 +107,7 @@ export async function GET(req: Request) {
 
   const merged = mergeOccupiedSlotStartsLists(fromBookedSlots, fromBookingList);
 
-  // If we could not parse any source, do not return 200 + [] — that makes the UI think
+  // If we could not parse any source, do not return 200 + []; that makes the UI think
   // "no bookings" and shows every slot (including taken ones).
   if (merged === null) {
     return NextResponse.json(

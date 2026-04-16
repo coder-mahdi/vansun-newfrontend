@@ -73,7 +73,7 @@ export const PIERCING_IMAGE_META: Record<
 
 const DEFAULT_HIT = 10;
 
-/** Face & body (image 1) — coordinates tuned for face-body layout; adjust as needed. */
+/** Face & body (image 1). Coordinates tuned for face-body layout; adjust as needed. */
 const faceBody: PiercingSelectionDef[] = [
   {
     id: "nostril",
@@ -135,7 +135,7 @@ const faceBody: PiercingSelectionDef[] = [
   },
 ];
 
-/** Lip / mouth (image 2) — approximate; refine when artwork is final. */
+/** Lip / mouth (image 2). Approximate; refine when artwork is final. */
 const lips: PiercingSelectionDef[] = [
   { id: "medusa", label: "Medusa", image: "lips", pricing: "lip", x: 50, y: 34 },
   { id: "jestrum", label: "Jestrum", image: "lips", pricing: "lip", x: 50, y: 42 },

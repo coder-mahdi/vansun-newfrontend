@@ -2,7 +2,7 @@
  * Home page content sources (live mode):
  *
  * 1. **Plugin REST (preferred):** `GET {base}/content/home-about` whenever a
- *    vansun v1 base is set — same rule as blogs: no `CONTENT_MODE=live` required.
+ *    vansun v1 base is set. Same rule as blogs: no `CONTENT_MODE=live` required.
  *    Priority: `NEXT_PUBLIC_CONTENT_API_URL`, `NEXT_PUBLIC_CONSENT_API_URL`,
  *    `NEXT_PUBLIC_API_URL` (each the v1 root, e.g. `…/wp-json/vansun/v1`).
  *

@@ -70,6 +70,33 @@
     object-fit: cover;
   }
 
+  &__avatar-wrap--initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba($color-primary-hex, 0.12);
+  }
+
+  &__avatar-initials {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: $color-primary;
+  }
+
+  &__stars {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.06em;
+    color: rgba($color-primary-hex, 0.55);
+  }
+
+  &__review-time {
+    font-weight: 400;
+    opacity: 0.75;
+  }
+
   &__quote {
     margin: 0;
     flex: 1;

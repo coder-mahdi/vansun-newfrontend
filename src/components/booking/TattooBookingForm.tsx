@@ -367,7 +367,7 @@ export function TattooBookingForm({
               availableDates.length === 0 ? (
                 <small className="booking-page__config-hint">
                   {scheduleMode === "working-hours"
-                    ? "No bookable days in the next window — check working hours in the CMS."
+                    ? "No bookable days in the next window. Check working hours in the CMS."
                     : "No dates returned. Check shop schedule for tattoo in the CMS."}
                 </small>
               ) : null}
@@ -397,7 +397,7 @@ export function TattooBookingForm({
                 </option>
                 {availableTimeSlots.map((slot) => (
                   <option key={slot.time} value={slot.time}>
-                    {slot.time} – {slot.end_time}
+                    {slot.time} - {slot.end_time}
                   </option>
                 ))}
               </select>
