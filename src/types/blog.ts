@@ -1,6 +1,7 @@
 export type BlogCategory = "tattoo" | "piercing";
 
 export type BlogSummary = {
+  /** URL segment: posts use `/b/[slug]` (main keyword slug from CMS). */
   slug: string;
   title: string;
   excerpt: string;

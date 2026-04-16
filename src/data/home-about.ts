@@ -1,7 +1,7 @@
 import { isLiveContentMode } from "@/lib/content-mode";
 
-/** Same asset as About page studio (`public/images/Shop/salon.png`). */
-export const homeAboutSalonImageUrl = "/images/Shop/salon.png";
+/** Same asset as About page studio (`public/images/Shop/salon.webp`). */
+export const homeAboutSalonImageUrl = "/images/Shop/salon.webp";
 
 /** Live CMS: set when wiring a featured image from API. */
 const cmsAboutImage: string | null = null;

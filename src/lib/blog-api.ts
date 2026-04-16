@@ -189,6 +189,19 @@ function normalizeCategory(raw: unknown): BlogCategory {
   return "tattoo";
 }
 
+function parseKeywordList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 function normalizeBlogSummaryRow(row: unknown): BlogSummary | null {
   if (!row || typeof row !== "object") return null;
   const o = row as Record<string, unknown>;
@@ -209,9 +222,10 @@ function normalizeBlogSummaryRow(row: unknown): BlogSummary | null {
     o.publishedAt ?? o.published_at ?? o.date ?? ""
   ).trim();
 
-  const tags = Array.isArray(o.tags)
-    ? o.tags.map((t) => String(t).trim()).filter(Boolean)
-    : [];
+  const tagsFromTagsField = parseKeywordList(o.tags);
+  const tagsFromKeywordsField = parseKeywordList(o.keywords);
+  const tags =
+    tagsFromTagsField.length > 0 ? tagsFromTagsField : tagsFromKeywordsField;
   const keywordFromApi = String(o.keyword ?? "").trim();
   const keyword =
     tags.length > 0 ? tags.join(", ") : keywordFromApi || "blog";
