@@ -39,9 +39,9 @@ export function ServicesSection({
               className="services-image"
               src={item.imageUrl}
               alt={item.imageAlt}
-              width={200}
-              height={200}
-              sizes="(max-width: 480px) 140px, (max-width: 768px) 160px, (max-width: 1023px) 180px, 200px"
+              width={150}
+              height={150}
+              sizes="(max-width: 480px) 110px, (max-width: 768px) 125px, (max-width: 1023px) 135px, 150px"
             />
             <p>{item.description}</p>
             <div className="button-group">

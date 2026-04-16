@@ -2,15 +2,20 @@
  * Gallery items from Vansun WordPress REST (`vansun/v1`).
  *
  * **Primary (vansun-core `includes/modules/gallery`):**
- * `GET /content/gallery` — `{ items: [...], by_category: { tattoo, piercing, jewelry } }`
+ * `GET /content/gallery`, `{ items: [...], by_category: { tattoo, piercing, jewelry } }`
  * Each item: `id`, `title`, `category`, `show_title`, `seo_keywords`, `created_at`,
  * `image: { id, url, alt }`.
  *
  * **Older JSON:** `GET /gallery/items` on `NEXT_PUBLIC_API_URL`.
  */
+import {
+  formatJewelryPriceCad,
+  JEWELRY_TIER_PRICE_CAD,
+} from "@/data/jewelry-tier-pricing";
 import { galleryItems as mockGalleryItems } from "@/data/gallery";
 import { apiGet } from "@/lib/api";
 import { contentImageUrl } from "@/lib/content-assets";
+import { fetchJewelryStoreItems } from "@/lib/jewelry-store-api";
 import { cmsPublicOrigin } from "@/lib/wp-html";
 import type { GalleryCategory, GalleryItem } from "@/types/gallery";
 
@@ -26,7 +31,7 @@ function trimSlash(url: string): string {
   return url.replace(/\/+$/, "");
 }
 
-function resolveGalleryImageUrl(url: string): string {
+export function resolveGalleryImageUrl(url: string): string {
   let s = url.trim();
   if (!s) return s;
   if (s.startsWith("//")) {
@@ -176,6 +181,28 @@ async function fetchVansunGalleryItems(): Promise<GalleryItem[]> {
     .map(normalizeGalleryRow)
     .filter(Boolean) as GalleryItem[];
   return out;
+}
+
+/**
+ * Jewelry-only grid: `GET …/content/jewelry-store` (same as booking wizard), mapped for {@link GalleryGrid}.
+ */
+export async function fetchJewelryGalleryItems(): Promise<GalleryItem[]> {
+  try {
+    const rows = await fetchJewelryStoreItems({
+      next: { revalidate: 120 },
+    });
+    return rows.map((j, i) => ({
+      id: `jewelry-store-${i}-${j.code}`,
+      title: j.code,
+      category: "jewelry",
+      imageSrc: resolveGalleryImageUrl(j.image_url),
+      imageAlt: `Studio jewelry ${j.code}`,
+      showTitle: true,
+      priceLabel: formatJewelryPriceCad(JEWELRY_TIER_PRICE_CAD[j.tier]),
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export async function fetchGalleryItems(): Promise<GalleryItem[]> {

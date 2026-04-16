@@ -2,8 +2,8 @@
  * Piercing consent submission to WordPress REST (`vansun/v1`).
  *
  * Base URL (first match wins):
- * - `NEXT_PUBLIC_CONSENT_API_URL` — e.g. `https://cms.vansunstudio.com/wp-json/vansun/v1`
- * - `NEXT_PUBLIC_API_URL` — fallback for older setups
+ * - `NEXT_PUBLIC_CONSENT_API_URL`, e.g. `https://cms.vansunstudio.com/wp-json/vansun/v1`
+ * - `NEXT_PUBLIC_API_URL`, fallback for older setups
  *
  * **POST** path: `NEXT_PUBLIC_CONSENT_PIERCING_PATH` or default `/consents/piercing`
  * Body: {@link PiercingConsentSubmitBody} (reCAPTCHA token is not sent to WP; verify separately if needed)

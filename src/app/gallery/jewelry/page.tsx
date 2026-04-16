@@ -8,11 +8,11 @@ import {
   fetchBlogVideos,
   pickLatestBlogVideo,
 } from "@/lib/blog-api";
-import { fetchGalleryItems } from "@/lib/gallery-api";
+import { fetchJewelryGalleryItems } from "@/lib/gallery-api";
 
 export default async function GalleryJewelryPage() {
   const [items, posts, videos] = await Promise.all([
-    fetchGalleryItems(),
+    fetchJewelryGalleryItems(),
     fetchBlogSummaries(),
     fetchBlogVideos(),
   ]);

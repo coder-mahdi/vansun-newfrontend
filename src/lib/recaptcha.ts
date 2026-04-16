@@ -7,8 +7,8 @@
  *
  * Client env:
  * - NEXT_PUBLIC_RECAPTCHA_ENV=development | live
- * - NEXT_PUBLIC_RECAPTCHA_SITE_KEY — live site key (optional if using built-in default)
- * - NEXT_PUBLIC_RECAPTCHA_SITE_KEY_DEV — optional override in development
+ * - NEXT_PUBLIC_RECAPTCHA_SITE_KEY, live site key (optional if using built-in default)
+ * - NEXT_PUBLIC_RECAPTCHA_SITE_KEY_DEV, optional override in development
  *
  * Server: verify token + optional score with RECAPTCHA_SECRET_KEY (same siteverify endpoint).
  */
