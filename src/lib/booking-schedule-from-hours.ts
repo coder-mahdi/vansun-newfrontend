@@ -214,7 +214,7 @@ function formatMinutesAsHHMM(mins: number): string {
   return `${pad2(h)}:${pad2(m)}`;
 }
 
-/** 30-minute slots [open, close) — last slot ends at close. */
+/** 30-minute slots [open, close). Last slot ends at close. */
 export function buildHalfHourSlots(
   openMin: number,
   closeMin: number
@@ -341,7 +341,7 @@ export function mergeOccupiedSlotStartsLists(
  * (`GET …/shop-schedule/booked-slots`, backed by `vansun_booking` in WordPress).
  *
  * @param shopSlots Candidate rows from shop schedule (e.g. {@link buildHalfHourSlotsForVansunDay} or legacy times).
- * @param bookedStarts Parsed `booked_starts` list; `null` means the occupancy request failed — shop slots are left unchanged.
+ * @param bookedStarts Parsed `booked_starts` list; `null` means the occupancy request failed; shop slots are left unchanged.
  */
 export function applyBookingListOccupancyToShopSlots(
   shopSlots: HalfHourSlotRow[],
@@ -404,7 +404,7 @@ export function formatWorkingHoursSummaryLines(week: NormalizedWeekly): string[]
   for (const d of DAY_ORDER_MON_FIRST) {
     const s = week[d];
     if (!s.open || !s.start || !s.end) continue;
-    lines.push(`${DAY_LABEL[d]}: ${s.start}–${s.end}`);
+    lines.push(`${DAY_LABEL[d]}: ${s.start}-${s.end}`);
   }
   return lines;
 }

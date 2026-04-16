@@ -20,7 +20,12 @@ export function GalleryCard({ item, className }: GalleryCardProps) {
         />
       </div>
       {item.showTitle === true ? (
-        <figcaption>{item.title}</figcaption>
+        <figcaption>
+          <span className="gallery-card__caption-title">{item.title}</span>
+          {item.priceLabel ? (
+            <span className="gallery-card__caption-price">{item.priceLabel}</span>
+          ) : null}
+        </figcaption>
       ) : null}
     </figure>
   );

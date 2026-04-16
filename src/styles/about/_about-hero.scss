@@ -40,11 +40,28 @@
     width: 100%;
   }
 
+  &__media-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    width: 100%;
+  }
+
+  &__media-grid--single {
+    grid-template-columns: 1fr;
+  }
+
+  &__media--grid &__media-grid {
+    @media (min-width: 480px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
   &__image-wrap {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 3;
-    border-radius: 0;
+    aspect-ratio: 3 / 4;
+    border-radius: 12px;
     overflow: hidden;
     background-color: rgba($color-primary-hex, 0.08);
     border: 1px solid rgba($color-primary-hex, 0.12);
@@ -83,8 +100,12 @@
     }
 
     &__image-wrap {
-      aspect-ratio: 5 / 4;
-      min-height: 22rem;
+      aspect-ratio: 4 / 5;
+      min-height: 18rem;
+    }
+
+    &__media--grid &__image-wrap {
+      min-height: 16rem;
     }
   }
 }

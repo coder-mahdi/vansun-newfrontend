@@ -11,10 +11,11 @@ import "@/styles/globals.scss";
 
 export const metadata: Metadata = {
   title: {
-    default: "Vansun",
-    template: "%s | Vansun",
+    default: "Vansun Studio",
+    template: "%s | Vansun Studio",
   },
-  description: "Vansun studio",
+  description:
+    "Vansun Studio: professional tattoo and piercing on Granville Street, Vancouver.",
   manifest: brandWebManifestPath,
   icons: {
     icon: [

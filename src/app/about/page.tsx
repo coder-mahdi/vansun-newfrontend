@@ -1,22 +1,25 @@
 import type { Metadata } from "next";
 
 import { AboutHero } from "@/components/about/AboutHero";
+import { AboutStudioSections } from "@/components/about/AboutStudioSections";
 import { BookingNoticeSection } from "@/components/about/BookingNoticeSection";
 import { PiercerSection } from "@/components/about/PiercerSection";
-import { PiercingRoomSection } from "@/components/about/PiercingRoomSection";
+import { fetchGooglePlaceReviewsSorted } from "@/lib/google-place-reviews";
 
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Vansu Studio: piercing room, experienced piercer, sterilization standards, and booking information.",
+    "Vansun Studio on Granville Street: Vancouver Coastal Health standards, hygiene, jewelry quality, and piercing room.",
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const googlePlaceReviews = await fetchGooglePlaceReviewsSorted();
+
   return (
     <>
       <AboutHero />
-      <PiercingRoomSection />
-      <PiercerSection />
+      <AboutStudioSections />
+      <PiercerSection googlePlaceReviews={googlePlaceReviews} />
       <BookingNoticeSection />
     </>
   );

@@ -10,13 +10,13 @@
  * `NEXT_PUBLIC_CMS_API_URL` origin, or if unset `NEXT_PUBLIC_CMS_SITE_URL` (same host as your CMS),
  * + `/wp-json/vansun/v1`.
  *
- * Optional: `NEXT_PUBLIC_BOOKING_OCCUPANCY_BASE` — same shape as the booking base, but used only
+ * Optional: `NEXT_PUBLIC_BOOKING_OCCUPANCY_BASE`, same shape as the booking base, but used only
  * for `GET /shop-schedule/booked-slots` when occupancy lives on a different URL than the rest.
  *
- * Optional: `NEXT_PUBLIC_BOOKING_BOOKED_SLOTS_DIRECT=1` — skip the Next.js proxy and call the CMS
+ * Optional: `NEXT_PUBLIC_BOOKING_BOOKED_SLOTS_DIRECT=1`, skip the Next.js proxy and call the CMS
  * URL only from the browser (default is proxy-first in the browser).
  *
- * Optional: `NEXT_PUBLIC_BOOKING_LIST_API_PATH` — extra vansun v1 path (e.g. `/bookings/by-date`)
+ * Optional: `NEXT_PUBLIC_BOOKING_LIST_API_PATH`, extra vansun v1 path (e.g. `/bookings/by-date`)
  * that returns JSON parseable by {@link parseBookedSlotStartsPayload}; merged with booked-slots
  * so occupied times from the booking list are always applied when that route exists.
  */
@@ -188,7 +188,7 @@ export async function fetchAvailableBookingTimes(
 }
 
 /**
- * GET `/working-hours?from=YYYY-MM-DD&to=YYYY-MM-DD` — vansun-core plugin
+ * GET `/working-hours?from=YYYY-MM-DD&to=YYYY-MM-DD`, vansun-core plugin
  * (`Vansun_Working_Hours_Api`). Returns resolved `days` (exceptions applied) plus `weekly` template.
  * Without `from`/`to`, `days` is omitted; always pass a range for booking UI.
  */

@@ -17,6 +17,8 @@ type GalleryGridProps = {
   /** When set, show items in any of these categories (overrides `category`). */
   categories?: GalleryCategory[];
   className?: string;
+  /** Default true; set false for stable catalog order (e.g. jewelry store). */
+  shuffle?: boolean;
 };
 
 export function GalleryGrid({
@@ -24,6 +26,7 @@ export function GalleryGrid({
   category,
   categories,
   className,
+  shuffle = true,
 }: GalleryGridProps) {
   const filtered =
     categories && categories.length > 0
@@ -31,7 +34,7 @@ export function GalleryGrid({
       : category
         ? items.filter((i) => i.category === category)
         : items;
-  const list = shuffled(filtered);
+  const list = shuffle ? shuffled(filtered) : filtered;
   return (
     <div className={cn("gallery-grid", className)}>
       {list.length === 0 ? (

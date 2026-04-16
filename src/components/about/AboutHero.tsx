@@ -1,13 +1,20 @@
 import Image from "next/image";
 
 import {
-  aboutPageHeroImageUrl,
+  aboutPageHeroImageUrls,
   aboutPageHeroIntro,
   aboutPageHeroTitle,
 } from "@/data/about-page";
 import { cn } from "@/lib/helpers";
 
+const HERO_ALTS = [
+  "Masi Aghdam, founder of Vansun Studio",
+  "Masi Aghdam, Vansun Studio",
+] as const;
+
 export function AboutHero({ className }: { className?: string }) {
+  const images = aboutPageHeroImageUrls;
+
   return (
     <header
       className={cn("about-hero", className)}
@@ -24,16 +31,37 @@ export function AboutHero({ className }: { className?: string }) {
             </p>
           ))}
         </div>
-        <div className="about-hero__media">
-          <div className="about-hero__image-wrap">
-            <Image
-              src={aboutPageHeroImageUrl}
-              alt="Vansu Studio"
-              fill
-              className="about-hero__image"
-              sizes="(min-width: 1023px) 45vw, 100vw"
-              priority
-            />
+        <div
+          className={cn(
+            "about-hero__media",
+            images.length > 1 && "about-hero__media--grid"
+          )}
+        >
+          <div
+            className={cn(
+              "about-hero__media-grid",
+              images.length === 1 && "about-hero__media-grid--single"
+            )}
+          >
+            {images.map((src, i) => (
+              <div
+                key={`${src}-${i}`}
+                className="about-hero__image-wrap"
+              >
+                <Image
+                  src={src}
+                  alt={HERO_ALTS[i] ?? `Vansun Studio, photo ${i + 1}`}
+                  fill
+                  className="about-hero__image"
+                  sizes={
+                    images.length > 1
+                      ? "(min-width: 1023px) 22vw, (min-width: 600px) 45vw, 100vw"
+                      : "(min-width: 1023px) 45vw, 100vw"
+                  }
+                  priority={i === 0}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
