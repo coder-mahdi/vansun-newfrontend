@@ -26,6 +26,7 @@ export const PIERCING_PRICE_BY_ID_CAD: Record<string, number> = {
   "anti-tragus": 59,
   ashley: 45,
   daith: 59,
+  flat: 39,
   "hidden-helix": 45,
   "inverted-lobe": 49,
   jestrum: 49,
@@ -171,6 +172,7 @@ const lips: PiercingSelectionDef[] = [
 
 const earLabels: { id: string; label: string }[] = [
   { id: "helix", label: "Helix" },
+  { id: "flat", label: "Flat" },
   { id: "forward-helix", label: "Forward Helix" },
   { id: "vertical-helix", label: "Vertical Helix" },
   { id: "hidden-helix", label: "Hidden Helix" },

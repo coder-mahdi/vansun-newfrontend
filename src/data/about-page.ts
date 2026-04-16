@@ -7,14 +7,14 @@ const cms = {
   testimonials: [null, null, null] as (string | null)[],
 };
 
-/** Public shop photos (`public/images/Shop/`). */
+/** Public shop photos (`public/images/Shop/`, WebP). */
 export const aboutShopImagePaths = {
-  location: "/images/Shop/location.png",
-  salon: "/images/Shop/salon.png",
-  tools: "/images/Shop/tools.png",
-  masi: "/images/Shop/Masi.png",
-  masi2: "/images/Shop/Masi2.png",
-  piercingRoom: `/images/Shop/${encodeURIComponent("piercing room.jpg")}`,
+  location: "/images/Shop/location.webp",
+  salon: "/images/Shop/salon.webp",
+  tools: "/images/Shop/tools.webp",
+  masi: "/images/Shop/Masi.webp",
+  masi2: "/images/Shop/Masi2.webp",
+  piercingRoom: `/images/Shop/${encodeURIComponent("piercing room.webp")}`,
 } as const;
 
 export const aboutPageHeroTitle = "Vansun Studio";
@@ -23,7 +23,7 @@ export const aboutPageHeroIntro = [
   "Vansun Studio was founded by Masi Aghdam, a multidisciplinary artist with a background in communications and a passion for body art, photography, and creative expression. She has spent years capturing nature and social events across Africa and Europe, and brings that artistic eye into every piercing and tattoo she creates. After gaining experience in Vancouver’s tattoo and piercing scene, she opened Vansun Studio on vibrant Granville Street: a clean, professional, and welcoming space run by a team of experienced artists.",
 ];
 
-/** Hero portraits: Masi + Masi2 in `public/images/Shop/`. Live CMS can override with a single hero image URL. */
+/** Hero portraits: Masi + Masi2 in `public/images/Shop/*.webp`. Live CMS can override with a single hero image URL. */
 export const aboutPageHeroImageUrls: string[] =
   isLiveContentMode() && cms.heroImage
     ? [cms.heroImage]

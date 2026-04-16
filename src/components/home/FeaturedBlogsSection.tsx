@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { blogPostHref } from "@/lib/blog-routes";
 import { cn } from "@/lib/helpers";
 import type { BlogSummary, BlogVideo } from "@/types/blog";
 
@@ -42,7 +43,7 @@ export function FeaturedBlogsSection({
           <div className="featured-blogs-column featured-blogs-column--articles">
             <article className="featured-blogs-featured">
               <Link
-                href={`/blogs/${latest.slug}`}
+                href={blogPostHref(latest.slug)}
                 className="featured-blogs-featured__link"
               >
                 {latest.coverImageUrl ? (
@@ -87,7 +88,7 @@ export function FeaturedBlogsSection({
                 <ul className="featured-blogs-titles__list">
                   {recentTitles.map((post) => (
                     <li key={post.slug}>
-                      <Link href={`/blogs/${post.slug}`}>{post.title}</Link>
+                      <Link href={blogPostHref(post.slug)}>{post.title}</Link>
                     </li>
                   ))}
                 </ul>

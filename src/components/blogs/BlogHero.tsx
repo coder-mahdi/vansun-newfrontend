@@ -4,6 +4,8 @@ import { cn } from "@/lib/helpers";
 
 type BlogHeroProps = {
   title: string;
+  /** When set, used for the page H1 (e.g. main keyword from slug). */
+  heading?: string;
   publishedAt?: string;
   /** Absolute URL when available (featured image or first inline image). */
   coverImageUrl?: string;
@@ -22,13 +24,14 @@ function formatPublishedLabel(iso: string): string {
 
 export function BlogHero({
   title,
+  heading,
   publishedAt,
   coverImageUrl,
   className,
 }: BlogHeroProps) {
   return (
     <header className={cn("blog-hero", className)}>
-      <h1>{title}</h1>
+      <h1>{heading ?? title}</h1>
       {publishedAt ? (
         <div className="blog-hero__meta">
           <time dateTime={publishedAt}>{formatPublishedLabel(publishedAt)}</time>
