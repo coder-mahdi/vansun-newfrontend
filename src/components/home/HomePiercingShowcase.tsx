@@ -48,9 +48,17 @@ export function HomePiercingShowcase({ className }: { className?: string }) {
           })}
         </div>
         <div className="home-piercing-showcase__cta">
-          <Link href="/book/piercing" className="home-piercing-showcase__link">
-            Book piercing
-          </Link>
+          <div className="home-piercing-showcase__cta-row">
+            <Link href="/book/piercing" className="home-piercing-showcase__link">
+              Book piercing
+            </Link>
+            <Link
+              href="/piercing/price-list"
+              className="home-piercing-showcase__link home-piercing-showcase__link--secondary"
+            >
+              Piercing price list
+            </Link>
+          </div>
         </div>
       </div>
     </section>

@@ -98,6 +98,14 @@
     text-align: center;
   }
 
+  &__cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem 1rem;
+  }
+
   &__link {
     display: inline-flex;
     align-items: center;
@@ -117,6 +125,17 @@
     &:hover {
       background: rgba($color-primary-hex, 1);
       color: #fffef8;
+    }
+
+    &--secondary {
+      color: rgba($color-primary-hex, 0.95);
+      background: rgba(255, 255, 255, 0.65);
+      border-color: rgba($color-primary-hex, 0.35);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.9);
+        color: rgba($color-primary-hex, 1);
+      }
     }
   }
 }
