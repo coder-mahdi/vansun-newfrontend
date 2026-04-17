@@ -832,6 +832,17 @@ export function PiercingBookingForm({
           <h2 className="booking-wizard__heading booking-wizard__heading--center">
             Piercings
           </h2>
+          <p className="booking-wizard__sub booking-wizard__sub--center">
+            Choose placements from the diagrams and list. For a printable overview of
+            fees by category, see the{" "}
+            <Link
+              href="/piercing/price-list"
+              className="piercing-price-list-inline-link"
+            >
+              Piercing price list
+            </Link>
+            .
+          </p>
           <PiercingVisualPicker
             quantities={piercingQuantities}
             onIncrement={incrementPiercing}

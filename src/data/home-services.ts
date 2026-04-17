@@ -39,6 +39,7 @@ export const homeServices: HomeService[] = [
     galleryLinks: [
       { label: "Piercing gallery", href: "/gallery/piercing" },
       { label: "Jewelry gallery", href: "/gallery/jewelry" },
+      { label: "Piercing price list", href: "/piercing/price-list" },
     ],
   },
 ];
