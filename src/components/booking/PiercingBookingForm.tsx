@@ -21,6 +21,7 @@ import {
   type JewelryTier,
   type JewelryUsageArea,
 } from "@/lib/jewelry-store-api";
+import { getBookingEmailValidationError } from "@/lib/booking-email";
 import { getBookingV1Base, postBookingCreate } from "@/lib/booking-v1";
 import { RECAPTCHA_SITE_KEY } from "@/lib/recaptcha";
 import type {
@@ -213,6 +214,7 @@ export function PiercingBookingForm({
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const [jewelryLightbox, setJewelryLightbox] = useState<{
     urls: string[];
@@ -382,6 +384,13 @@ export function PiercingBookingForm({
       return;
     }
     if (!termsAccepted) return;
+
+    const emailValidation = getBookingEmailValidationError(email);
+    if (emailValidation) {
+      setEmailError(emailValidation);
+      return;
+    }
+    setEmailError(null);
 
     const payload: PiercingBookingStep1Values = {
       fullName: fullName.trim(),
@@ -571,6 +580,7 @@ export function PiercingBookingForm({
     setNotes("");
     setSubmitError(null);
     setSubmitting(false);
+    setEmailError(null);
     setDate("");
     setTime("");
     setJewelryLightbox(null);
@@ -680,11 +690,23 @@ export function PiercingBookingForm({
                 name="email"
                 type="email"
                 value={email}
-                onChange={(ev) => setEmail(ev.target.value)}
+                onChange={(ev) => {
+                  setEmail(ev.target.value);
+                  setEmailError(null);
+                }}
                 placeholder="Enter your email"
                 required
                 autoComplete="email"
+                aria-invalid={emailError ? true : undefined}
+                aria-describedby={
+                  emailError ? "piercing-email-error" : undefined
+                }
               />
+              {emailError ? (
+                <p id="piercing-email-error" className="booking-form-field-error">
+                  {emailError}
+                </p>
+              ) : null}
             </div>
             <div>
               <label htmlFor="piercing-phone">Phone</label>
@@ -1034,11 +1056,16 @@ export function PiercingBookingForm({
                 {step1.date} at {step1.time}
               </span>
             </li>
-            <li className="booking-wizard__summary-row">
+            <li className="booking-wizard__summary-row booking-wizard__summary-row--contact-stack">
               <span className="booking-wizard__summary-label">Contact</span>
-              <span className="booking-wizard__summary-value">
-                {step1.fullName} · {step1.email}
-              </span>
+              <div className="booking-wizard__summary-contact-block">
+                <span className="booking-wizard__summary-contact-name">
+                  {step1.fullName}
+                </span>
+                <span className="booking-wizard__summary-contact-email">
+                  {step1.email}
+                </span>
+              </div>
             </li>
             <li className="booking-wizard__summary-row">
               <span className="booking-wizard__summary-label">Phone</span>

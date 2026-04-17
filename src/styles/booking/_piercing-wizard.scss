@@ -547,6 +547,47 @@
   white-space: nowrap;
 }
 
+.booking-wizard__summary-row--contact-stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+
+  .booking-wizard__summary-label {
+    flex-shrink: 0;
+  }
+}
+
+.booking-wizard__summary-contact-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+  text-align: left;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: rgba(250, 255, 238, 1);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.booking-wizard__summary-contact-name {
+  font-weight: 600;
+}
+
+.booking-wizard__summary-contact-email {
+  font-weight: 400;
+  opacity: 0.95;
+}
+
+.booking-form-field-error {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: #ffb4a8;
+}
+
 .booking-wizard__aftercare {
   margin: 1rem 0 1.25rem;
   padding: 1rem;
