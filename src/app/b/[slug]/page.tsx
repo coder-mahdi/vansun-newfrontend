@@ -9,12 +9,14 @@ import { RelatedBlogsSection } from "@/components/blogs/RelatedBlogsSection";
 import { fetchBlogPost } from "@/lib/blog-api";
 import { blogPostHref } from "@/lib/blog-routes";
 import {
-  blogHeadingFromSlug,
   blogMetaKeywordPhrase,
   buildBlogMetaDescription,
 } from "@/lib/blog-post-seo";
 
 type Props = { params: Promise<{ slug: string }> };
+
+/** Resolve post from CMS on each request (slug list + body can update without rebuild). */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -52,18 +54,18 @@ export default async function BlogPostPage({ params }: Props) {
   const post = await fetchBlogPost(slug);
   if (!post) notFound();
 
-  const h1 = blogHeadingFromSlug(slug);
-
   return (
     <article className="blog-post-page">
       <BlogHero
         title={post.title}
-        heading={h1}
         publishedAt={post.publishedAt}
         coverImageUrl={post.coverImageUrl}
       />
       <BlogContentSection content={post.content} />
-      <BlogPostInternalLinks category={post.category} />
+      <BlogPostInternalLinks
+        category={post.category}
+        articleKeyword={post.keyword}
+      />
       <RelatedBlogsSection excludeSlug={slug} />
       <BlogPostFaqSection category={post.category} />
     </article>

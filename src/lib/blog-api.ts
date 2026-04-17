@@ -17,6 +17,9 @@
  * - `NEXT_PUBLIC_CONTENT_API_URL`
  * - `NEXT_PUBLIC_CONSENT_API_URL`
  * - `NEXT_PUBLIC_API_URL`
+ *
+ * Blog list/detail requests use `_vs` on the query string and `no-cache` request headers so
+ * nginx/CDN in front of the CMS cannot keep serving stale JSON (see `bypassUpstreamCache`).
  */
 import {
   blogPostsBySlug,
@@ -127,12 +130,30 @@ function buildQueryString(
 
 async function contentGet<T>(
   path: string,
-  params?: Record<string, string | number | undefined>
+  params?: Record<string, string | number | undefined>,
+  options?: { cache?: RequestCache; bypassUpstreamCache?: boolean }
 ): Promise<T> {
   const base = apiBase();
-  const res = await fetch(`${trimSlash(base)}${path}${buildQueryString(params)}`, {
-    next: { revalidate: 300 },
-  });
+  const bust = options?.bypassUpstreamCache === true;
+  const mergedParams = bust
+    ? { ...(params ?? {}), _vs: Date.now() }
+    : params;
+  const url = `${trimSlash(base)}${path}${buildQueryString(mergedParams)}`;
+  const noStore = options?.cache === "no-store" || bust;
+  const init: RequestInit = noStore
+    ? {
+        cache: "no-store",
+        ...(bust
+          ? {
+              headers: {
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+              },
+            }
+          : {}),
+      }
+    : { next: { revalidate: 300 } };
+  const res = await fetch(url, init);
   if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
   return res.json() as Promise<T>;
 }
@@ -195,6 +216,18 @@ function asArray(payload: unknown): unknown[] {
     if (Array.isArray(o.items)) return o.items;
   }
   return [];
+}
+
+/** Vansun `/content/blogs` often returns `{ items: Post[] }`. */
+function blogRowsFromPayload(payload: unknown): unknown[] {
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "items" in payload
+  ) {
+    return asArray((payload as { items?: unknown }).items);
+  }
+  return asArray(payload);
 }
 
 function normalizeCategory(raw: unknown): BlogCategory {
@@ -380,8 +413,11 @@ async function fetchBlogPostFromWpRest(slug: string): Promise<BlogPost | null> {
   const base = wpJsonBase();
   if (!base) return null;
 
-  const url = `${base}/wp/v2/posts?slug=${encodeURIComponent(slug)}&_embed=1`;
-  const res = await fetch(url, { next: { revalidate: 300 } });
+  const url = `${base}/wp/v2/posts?slug=${encodeURIComponent(slug)}&_embed=1&_vs=${Date.now()}`;
+  const res = await fetch(url, {
+    cache: "no-store",
+    headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+  });
   if (!res.ok) return null;
   const posts = (await res.json()) as WpRestPost[];
   const post = posts[0];
@@ -507,14 +543,13 @@ export async function fetchBlogSummaries(
       params.topic = topic;
     }
 
-    const payload = await contentGet<unknown>("/content/blogs", params);
+    const payload = await contentGet<unknown>(
+      "/content/blogs",
+      params,
+      { cache: "no-store", bypassUpstreamCache: true }
+    );
 
-    const rows =
-      typeof payload === "object" &&
-      payload !== null &&
-      "items" in payload
-        ? asArray((payload as { items?: unknown }).items)
-        : asArray(payload);
+    const rows = blogRowsFromPayload(payload);
 
     const enriched = await Promise.all(
       rows.map(async (row) => {
@@ -541,8 +576,23 @@ export async function fetchBlogSummaries(
     if (out.length > 0) {
       return out.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
     }
-  } catch {
-    /* use mock */
+
+    if (process.env.NODE_ENV === "development") {
+      const keys =
+        payload && typeof payload === "object"
+          ? Object.keys(payload as object).join(", ")
+          : typeof payload;
+      console.warn(
+        "[fetchBlogSummaries] No rows after normalize. Payload keys:",
+        keys,
+        "rowCount raw:",
+        rows.length
+      );
+    }
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[fetchBlogSummaries] CMS error, using mock:", err);
+    }
   }
 
   return [...mockBlogSummaries];
@@ -555,10 +605,12 @@ export async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
   }
 
   try {
-    const payload = await contentGet<unknown>("/content/blogs", {
-      per_page: 100,
-    });
-    const rows = asArray(payload);
+    const payload = await contentGet<unknown>(
+      "/content/blogs",
+      { per_page: 100 },
+      { cache: "no-store", bypassUpstreamCache: true }
+    );
+    const rows = blogRowsFromPayload(payload);
     const match = rows.find((row) => rowMatchesSlug(row, slug));
     let post = normalizeBlogPostPayload(match);
     if (post && !post.coverImageUrl && match && typeof match === "object") {
@@ -570,8 +622,10 @@ export async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
       }
     }
     if (post) return post;
-  } catch {
-    /* fallback */
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`[fetchBlogPost] CMS list fetch failed for slug=${slug}:`, err);
+    }
   }
 
   const fromWp = await fetchBlogPostFromWpRest(slug);

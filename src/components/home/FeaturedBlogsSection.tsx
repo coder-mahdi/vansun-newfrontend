@@ -59,7 +59,6 @@ export function FeaturedBlogsSection({
                   </div>
                 ) : null}
                 <div className="featured-blogs-featured__body">
-                  <p className="featured-blogs-featured__keyword">{latest.keyword}</p>
                   <h3 className="featured-blogs-featured__heading">
                     {latest.title}
                   </h3>

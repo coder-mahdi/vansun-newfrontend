@@ -30,7 +30,6 @@ export function BlogCard({ blog, className }: BlogCardProps) {
         </div>
       </Link>
       <div className="blog-card__body">
-        <p className="blog-card__keyword">{blog.keyword}</p>
         <h2 className="blog-card__title">
           <Link href={blogPostHref(blog.slug)}>{blog.title}</Link>
         </h2>

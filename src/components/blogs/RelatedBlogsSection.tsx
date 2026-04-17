@@ -18,7 +18,11 @@ export async function RelatedBlogsSection({
 
   return (
     <section
-      className={cn("related-blogs-section", className)}
+      className={cn(
+        "related-blogs-section",
+        "related-blogs-section--compact",
+        className
+      )}
       aria-labelledby="related-blogs-heading"
     >
       <h2 id="related-blogs-heading">Related</h2>

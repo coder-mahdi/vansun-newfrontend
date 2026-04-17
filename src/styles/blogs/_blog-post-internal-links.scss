@@ -35,8 +35,27 @@
       }
     }
   }
-}
 
-.blog-post-faq-wrap {
-  margin-top: 0;
+  &__keyword-note {
+    margin: 1.1rem 0 0;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba($color-primary, 0.1);
+    font-size: 0.7rem;
+    line-height: 1.45;
+    letter-spacing: 0.02em;
+  }
+
+  &__keyword-label {
+    display: inline;
+    margin-right: 0.35em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgb(95, 118, 92);
+  }
+
+  &__keyword-value {
+    color: rgba($color-primary, 0.52);
+    font-weight: 400;
+  }
 }

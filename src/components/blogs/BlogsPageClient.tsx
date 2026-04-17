@@ -35,8 +35,8 @@ function BlogVideoBlock({ video: v }: { video: BlogVideo }) {
           className="blogs-page__video-embed"
         />
       </div>
-      <p className="blogs-page__video-keyword">{v.keyword}</p>
       <h3 className="blogs-page__video-title">{v.title}</h3>
+      <p className="blogs-page__video-keyword">{v.keyword}</p>
       <p className="blogs-page__video-excerpt">{v.excerpt}</p>
     </article>
   );
@@ -50,6 +50,10 @@ export function BlogsPageClient({
   const [filter, setFilter] = useState<Filter>("all");
   const [postsVisible, setPostsVisible] = useState(POSTS_PAGE_SIZE);
   const [videosExpanded, setVideosExpanded] = useState(false);
+
+  useEffect(() => {
+    console.log("[BlogList] props blogs:", posts.length, posts);
+  }, [posts]);
 
   const filteredPosts = useMemo(() => {
     if (filter === "all") return posts;
