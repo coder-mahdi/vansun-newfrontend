@@ -684,7 +684,14 @@ export function PiercingBookingForm({
             second piercing of the same type (for example both nipples or
             paired lip piercings). All piercings are done with a needle, and
             every tool is sterilized with modern equipment according to
-            Vancouver Coastal Health standards.
+            Vancouver Coastal Health standards.{" "}
+            <Link
+              href="/piercing/price-list"
+              className="piercing-price-list-inline-link"
+            >
+              Piercing price list
+            </Link>
+            .
           </p>
           <PiercingVisualPicker
             quantities={piercingQuantities}

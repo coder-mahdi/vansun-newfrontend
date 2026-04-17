@@ -1,0 +1,122 @@
+.piercing-price-list-explorer {
+  &__panel {
+    min-height: 0;
+  }
+
+  &__panel-title {
+    margin: 0 0 0.65rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: rgba(250, 255, 238, 0.88);
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    max-height: min(52vh, 28rem);
+    overflow-y: auto;
+    padding-right: 0.25rem;
+    scrollbar-gutter: stable;
+  }
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.45rem 0.55rem;
+    border-radius: 8px;
+    border: 1px solid rgba(250, 255, 238, 0.14);
+    background: rgba(0, 0, 0, 0.12);
+    font-size: 0.88rem;
+    color: rgba(250, 255, 238, 0.92);
+  }
+
+  &__name {
+    font-weight: 600;
+    min-width: 0;
+    line-height: 1.35;
+  }
+
+  &__price {
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: rgba(255, 248, 230, 0.95);
+    text-align: right;
+  }
+
+  &__unit-note {
+    font-weight: 500;
+    color: rgba(250, 255, 238, 0.65);
+  }
+}
+
+.piercing-price-list-page__cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  padding-top: 0.25rem;
+
+  a.booking-wizard__btn {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.piercing-book-page__quick-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  margin: -1.5rem auto 1.75rem;
+  max-width: 720px;
+  padding: 0 0.5rem;
+
+  @media (max-width: 767px) {
+    margin-top: -1rem;
+    margin-bottom: 1.25rem;
+  }
+}
+
+.piercing-book-page__quick-nav a {
+  color: rgb(61, 44, 0);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(61, 44, 0, 0.45);
+  padding-bottom: 2px;
+
+  &:hover {
+    border-bottom-color: rgb(61, 44, 0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(139, 69, 19, 0.65);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
+.piercing-price-list-inline-link {
+  color: rgba(255, 220, 160, 0.98);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+
+  &:hover {
+    color: rgba(255, 248, 230, 1);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(255, 220, 160, 0.65);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
