@@ -1,7 +1,15 @@
-import { devCmsAsset } from "@/lib/content-assets";
+import { isLiveContentMode } from "@/lib/content-mode";
 
-/** Mock image in `public/dev-cms/`; wire CMS URL when live. */
-export const homeAboutImageUrl = devCmsAsset("about-studio.jpg");
+/** Same asset as About page studio (`public/images/Shop/salon.webp`). */
+export const homeAboutSalonImageUrl = "/images/Shop/salon.webp";
+
+/** Live CMS: set when wiring a featured image from API. */
+const cmsAboutImage: string | null = null;
+
+export const homeAboutImageUrl =
+  isLiveContentMode() && cmsAboutImage
+    ? cmsAboutImage
+    : homeAboutSalonImageUrl;
 
 export const homeAboutTitle = "Vansun Studio";
 

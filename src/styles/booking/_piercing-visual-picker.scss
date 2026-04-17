@@ -29,6 +29,53 @@
     display: flex;
     flex-direction: column;
     gap: 0.45rem;
+    min-width: 0;
+  }
+
+  /** Category tabs: first on mobile (above carousel); on desktop row between placements and cart. */
+  &__category-tabs {
+    min-width: 0;
+
+    @media (max-width: 1023px) {
+      margin: 0;
+      padding: 0 0 0.65rem;
+      border-top: none;
+      border-bottom: 1px solid rgba(250, 255, 238, 0.22);
+    }
+
+    @media (min-width: 1024px) {
+      margin-top: 0.35rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(250, 255, 238, 0.22);
+      border-bottom: none;
+      grid-area: cattabs;
+      align-self: stretch;
+      max-width: 420px;
+      justify-self: end;
+      width: 100%;
+    }
+  }
+
+  /** Placement chips (inside tab panel); on desktop participates in parent grid via display:contents on panel. */
+  &__placements {
+    min-width: 0;
+
+    @media (max-width: 1023px) {
+      padding: 0.45rem 0.5rem;
+      border-radius: 10px;
+      border: 1px solid rgba(250, 255, 238, 0.18);
+      background: rgba(0, 0, 0, 0.1);
+      max-height: min(38vh, 260px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (min-width: 1024px) {
+      grid-area: placements;
+      max-width: 420px;
+      justify-self: end;
+      width: 100%;
+    }
   }
 
   &__thumb {
@@ -131,6 +178,10 @@
     line-height: 0;
     background: transparent;
     transform-style: preserve-3d;
+
+    @media (max-width: 1023px) {
+      aspect-ratio: unset;
+    }
   }
 
   &__image {
@@ -143,6 +194,55 @@
     user-select: none;
     pointer-events: none;
     transition: opacity calc(var(--piercing-carousel-dur) * 0.55) ease-out;
+
+    @media (max-width: 1023px) {
+      height: auto;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    &__carousel {
+      --piercing-center-w: min(100%, 296px);
+      min-height: 0;
+      padding: 0.25rem 0.35rem 0.55rem;
+      margin-top: 0;
+      perspective: none;
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    &__thumb--left,
+    &__thumb--right {
+      display: none !important;
+    }
+
+    &__thumb {
+      position: relative;
+      bottom: auto;
+      left: auto !important;
+      width: min(100%, var(--piercing-center-w));
+      max-width: 100%;
+      margin: 0;
+      transform: none !important;
+      opacity: 1 !important;
+      filter: none !important;
+      will-change: auto;
+    }
+
+    &__thumb--center {
+      z-index: 1;
+    }
+
+    &__thumb--center .piercing-visual-picker__thumb-label {
+      display: block;
+      margin-top: 0.35rem;
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: rgba(255, 248, 230, 0.92);
+    }
   }
 
   &__tabs {
@@ -152,7 +252,7 @@
     gap: 0.35rem;
     justify-content: center;
     align-items: center;
-    padding: 0.15rem 0;
+    padding: 0;
   }
 
   &__tab {
@@ -191,11 +291,19 @@
     min-height: 2rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
+
+    @media (min-width: 1024px) {
+      display: contents;
+    }
   }
 
   &__sidebar {
     margin-top: 0.15rem;
+
+    @media (min-width: 1024px) {
+      margin-top: 0;
+    }
   }
 
   &__total {
@@ -209,6 +317,14 @@
     border-radius: 10px;
     border: 1px solid rgba(250, 255, 238, 0.2);
     background: rgba(0, 0, 0, 0.18);
+
+    @media (min-width: 1024px) {
+      grid-area: total;
+      margin-top: 0;
+      max-width: 420px;
+      justify-self: end;
+      width: 100%;
+    }
   }
 
   &__total-label {
@@ -326,10 +442,18 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     justify-content: flex-start;
+
+    @media (max-width: 1023px) {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.35rem 0.4rem;
+      align-content: start;
+    }
   }
 
   &__list-item {
     margin: 0;
+    min-width: 0;
   }
 
   &__chip-row {
@@ -337,13 +461,18 @@
     flex-wrap: wrap;
     align-items: stretch;
     gap: 0.35rem;
+
+    @media (max-width: 1023px) {
+      flex-wrap: nowrap;
+      width: 100%;
+    }
   }
 
   &__chip {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.15rem;
+    gap: 0.1rem;
     padding: 0.5rem 0.75rem;
     border-radius: 10px;
     border: 1px solid rgba(250, 255, 238, 0.25);
@@ -354,6 +483,13 @@
     flex: 1 1 auto;
     min-width: 0;
     max-width: 100%;
+
+    @media (max-width: 1023px) {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 0.38rem 0.5rem;
+      border-radius: 8px;
+    }
     transition:
       border-color 0.2s ease,
       background-color 0.2s ease;
@@ -386,6 +522,13 @@
     transition:
       border-color 0.15s ease,
       background-color 0.15s ease;
+
+    @media (max-width: 1023px) {
+      min-width: 2.1rem;
+      padding: 0 0.2rem;
+      font-size: 1.2rem;
+      border-radius: 8px;
+    }
 
     &:hover {
       border-color: rgba(255, 220, 160, 0.95);
@@ -421,12 +564,24 @@
   &__chip-label {
     font-weight: 600;
     font-size: 0.9rem;
+
+    @media (max-width: 1023px) {
+      font-size: 0.8rem;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   &__chip-price {
     font-size: 0.78rem;
     color: rgba(250, 255, 238, 0.65);
     line-height: 1.3;
+
+    @media (max-width: 1023px) {
+      font-size: 0.72rem;
+    }
   }
 
   @media (max-width: 640px) {
@@ -452,19 +607,23 @@
     &__main {
       display: grid;
       grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.85fr);
+      grid-template-rows: auto auto auto;
+      grid-template-areas:
+        "media placements"
+        "media cattabs"
+        "media total";
+      column-gap: 1.25rem;
+      row-gap: 0.7rem;
       align-items: start;
-      gap: 1.25rem;
     }
 
     &__media {
+      grid-area: media;
       min-width: 0;
     }
 
-    &__sidebar {
-      margin-top: 0.55rem;
-      max-width: 420px;
-      width: 100%;
-      justify-self: end;
+    &__category-tabs &__tabs {
+      justify-content: flex-start;
     }
   }
 }

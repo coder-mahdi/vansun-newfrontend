@@ -28,7 +28,7 @@ export function AboutUsSection({
             alt={imageAlt?.trim() || title}
             fill
             className="about-image__img"
-            sizes="(min-width: 1023px) 50vw, 100vw"
+            sizes="(min-width: 1023px) 360px, (min-width: 700px) 85vw, 100vw"
             priority={false}
           />
         </div>

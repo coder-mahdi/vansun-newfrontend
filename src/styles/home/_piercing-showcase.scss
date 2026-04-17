@@ -1,0 +1,122 @@
+.home-piercing-showcase {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  padding: 2.5rem 1.25rem 2.75rem;
+  background: linear-gradient(
+    180deg,
+    #f0e8de 0%,
+    #ebe3d8 40%,
+    #e8dfd3 100%
+  );
+  color: $color-primary;
+  border-bottom: 1px solid rgba($color-primary-hex, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+
+  @media (min-width: 768px) {
+    padding: 3rem 2rem 3.25rem;
+  }
+
+  &__inner {
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+
+  &__title {
+    margin: 0 0 0.65rem;
+    font-family: $font-heading;
+    font-weight: 400;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  &__intro {
+    margin: 0 auto 1.75rem;
+    max-width: 36rem;
+    text-align: center;
+    font-size: $font-size-base;
+    line-height: $line-height-loose;
+    color: rgba($color-primary-hex, 0.88);
+  }
+
+  &__grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.15rem;
+    }
+  }
+
+  &__card {
+    margin: 0;
+    padding: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba($color-primary-hex, 0.12);
+    box-shadow:
+      0 8px 24px rgba(61, 44, 0, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.8) inset;
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        0 14px 32px rgba(61, 44, 0, 0.12),
+        0 1px 0 rgba(255, 255, 255, 0.85) inset;
+    }
+  }
+
+  &__img-wrap {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    width: 100%;
+    background: rgba($color-primary-hex, 0.06);
+  }
+
+  &__img {
+    object-fit: cover;
+  }
+
+  &__caption {
+    padding: 0.65rem 0.85rem 0.85rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 0.03em;
+    color: rgba($color-primary-hex, 0.95);
+  }
+
+  &__cta {
+    margin-top: 1.75rem;
+    text-align: center;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.65rem 1.35rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    color: rgba(250, 255, 238, 1);
+    background: rgba($color-primary-hex, 0.92);
+    border: 1px solid rgba($color-primary-hex, 1);
+    transition:
+      background 0.2s ease,
+      color 0.2s ease;
+
+    &:hover {
+      background: rgba($color-primary-hex, 1);
+      color: #fffef8;
+    }
+  }
+}

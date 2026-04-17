@@ -1,15 +1,15 @@
 /**
  * Blog posts and videos from Vansun WordPress REST (`vansun/v1`).
  *
- * Blogs: GET `/content/blogs` — core `post` type, `topic` (tattoo|piercing), `tags` / `tag_slugs` for SEO.
- * Videos: GET `/content/videos` — returns `[]` when no API URL or no rows (no mock list).
+ * Blogs: GET `/content/blogs`, core `post` type, `topic` (tattoo|piercing), `tags` / `tag_slugs` for SEO.
+ * Videos: GET `/content/videos`, returns `[]` when no API URL or no rows (no mock list).
  *
  * Optional: if `NEXT_PUBLIC_CMS_API_URL` is set, single post pages can resolve by real WP `slug`
  * via `GET /wp/v2/posts?slug=...&_embed=1` when the vansun list does not include a slug.
  *
  * When `image_url` / featured image are empty, covers are filled from WordPress:
  * `GET /wp/v2/posts/{id}?_embed=1` (featured media) then `GET /wp/v2/media?parent={id}&media_type=image`
- * (first attached image — e.g. uploads not inserted into body and not set as featured).
+ * (first attached image, e.g. uploads not inserted into body and not set as featured).
  *
  * Base URL priority:
  * - `NEXT_PUBLIC_CONTENT_API_URL`
@@ -189,6 +189,19 @@ function normalizeCategory(raw: unknown): BlogCategory {
   return "tattoo";
 }
 
+function parseKeywordList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 function normalizeBlogSummaryRow(row: unknown): BlogSummary | null {
   if (!row || typeof row !== "object") return null;
   const o = row as Record<string, unknown>;
@@ -209,9 +222,10 @@ function normalizeBlogSummaryRow(row: unknown): BlogSummary | null {
     o.publishedAt ?? o.published_at ?? o.date ?? ""
   ).trim();
 
-  const tags = Array.isArray(o.tags)
-    ? o.tags.map((t) => String(t).trim()).filter(Boolean)
-    : [];
+  const tagsFromTagsField = parseKeywordList(o.tags);
+  const tagsFromKeywordsField = parseKeywordList(o.keywords);
+  const tags =
+    tagsFromTagsField.length > 0 ? tagsFromTagsField : tagsFromKeywordsField;
   const keywordFromApi = String(o.keyword ?? "").trim();
   const keyword =
     tags.length > 0 ? tags.join(", ") : keywordFromApi || "blog";
@@ -273,7 +287,7 @@ function normalizeBlogPostPayload(row: unknown): BlogPost | null {
   return { ...base, coverImageUrl: coverImageUrl ?? base.coverImageUrl, content };
 }
 
-/** WordPress REST — post list item or single. */
+/** WordPress REST: post list item or single. */
 type WpRestPost = {
   id?: number;
   slug?: string;

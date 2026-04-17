@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { blogPostHref } from "@/lib/blog-routes";
 import { cn } from "@/lib/helpers";
 import type { BlogSummary } from "@/types/blog";
 
@@ -12,7 +13,7 @@ type BlogCardProps = {
 export function BlogCard({ blog, className }: BlogCardProps) {
   return (
     <article className={cn("blog-card", className)}>
-      <Link href={`/blogs/${blog.slug}`} className="blog-card__media-link">
+      <Link href={blogPostHref(blog.slug)} className="blog-card__media-link">
         <div className="blog-card__media">
           {blog.coverImageUrl ? (
             <Image
@@ -31,10 +32,10 @@ export function BlogCard({ blog, className }: BlogCardProps) {
       <div className="blog-card__body">
         <p className="blog-card__keyword">{blog.keyword}</p>
         <h2 className="blog-card__title">
-          <Link href={`/blogs/${blog.slug}`}>{blog.title}</Link>
+          <Link href={blogPostHref(blog.slug)}>{blog.title}</Link>
         </h2>
         <p className="blog-card__excerpt">{blog.excerpt}</p>
-        <Link href={`/blogs/${blog.slug}`} className="blog-card__read-more">
+        <Link href={blogPostHref(blog.slug)} className="blog-card__read-more">
           Read more
         </Link>
       </div>

@@ -160,6 +160,36 @@ export function PiercingVisualPicker({
   return (
     <div className={cn("piercing-visual-picker", className)}>
       <div className="piercing-visual-picker__main">
+        <div className="piercing-visual-picker__category-tabs">
+          <div
+            className="piercing-visual-picker__tabs"
+            role="tablist"
+            aria-label="Piercing categories"
+          >
+            {piercingImageOrder.map((key) => {
+              const meta = PIERCING_IMAGE_META[key];
+              const selected = activeCategory === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  role="tab"
+                  id={`piercing-tab-${key}`}
+                  className={cn(
+                    "piercing-visual-picker__tab",
+                    selected && "piercing-visual-picker__tab--active"
+                  )}
+                  aria-selected={selected}
+                  aria-controls="piercing-options-panel"
+                  onClick={() => setActiveCategory(key)}
+                >
+                  {meta.categoryTabLabel}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="piercing-visual-picker__media">
           <div
             className="piercing-visual-picker__carousel"
@@ -191,34 +221,6 @@ export function PiercingVisualPicker({
               );
             })}
           </div>
-
-          <div
-            className="piercing-visual-picker__tabs"
-            role="tablist"
-            aria-label="Piercing categories"
-          >
-            {piercingImageOrder.map((key) => {
-              const meta = PIERCING_IMAGE_META[key];
-              const selected = activeCategory === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  role="tab"
-                  id={`piercing-tab-${key}`}
-                  className={cn(
-                    "piercing-visual-picker__tab",
-                    selected && "piercing-visual-picker__tab--active"
-                  )}
-                  aria-selected={selected}
-                  aria-controls="piercing-options-panel"
-                  onClick={() => setActiveCategory(key)}
-                >
-                  {meta.categoryTabLabel}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         <div
@@ -227,11 +229,13 @@ export function PiercingVisualPicker({
           className="piercing-visual-picker__tab-panel piercing-visual-picker__sidebar"
           aria-labelledby={`piercing-tab-${activeCategory}`}
         >
-          <ChipList
-            defs={activeDefs}
-            quantities={quantities}
-            onIncrement={onIncrement}
-          />
+          <div className="piercing-visual-picker__placements">
+            <ChipList
+              defs={activeDefs}
+              quantities={quantities}
+              onIncrement={onIncrement}
+            />
+          </div>
           <div
             className="piercing-visual-picker__total"
             aria-live="polite"

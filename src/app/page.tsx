@@ -1,6 +1,7 @@
 import { AboutUsSection } from "@/components/home/AboutUsSection";
 import { FeaturedBlogsSection } from "@/components/home/FeaturedBlogsSection";
 import { HeroSection } from "@/components/home/HeroSection";
+import { HomePiercingShowcase } from "@/components/home/HomePiercingShowcase";
 import { JewelryGallerySection } from "@/components/home/JewelryGallerySection";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import {
@@ -30,6 +31,7 @@ export default async function HomePage() {
         intro={home.jewelry.intro}
         slides={home.jewelry.slides}
       />
+      <HomePiercingShowcase />
       <AboutUsSection
         title={home.about.title}
         body={home.about.body}

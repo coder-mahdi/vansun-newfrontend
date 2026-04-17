@@ -1,16 +1,21 @@
 /**
- * Booking FAQs from `NEXT_PUBLIC_API_URL`.
+ * Booking FAQs.
  *
- * Expected: **GET** `/faqs?context=booking&service=piercing` (or `tattoo`)
- * Response: JSON array or `{ faqs: [...] }` | `{ data: [...] }`
- *
- * Each item: `question` | `title`, `answer` | `content` | `body`, optional `id` | `slug`.
+ * - **Mock / dev:** `NEXT_PUBLIC_CONTENT_MODE` not `live` (default) uses
+ *   `mockBookingFaqsPiercing` / `mockBookingFaqsTattoo` in `@/data/faqs`, no HTTP.
+ * - **Live:** when `NEXT_PUBLIC_CONTENT_MODE=live` and `NEXT_PUBLIC_API_URL` is set,
+ *   **GET** `/faqs?context=booking&service=piercing` (or `tattoo`). Response: JSON array
+ *   or `{ faqs: [...] }` | `{ data: [...] }`. Each row: `question` | `title`,
+ *   `answer` | `content` | `body`, optional `id` | `slug`.
+ * - **Override:** `NEXT_PUBLIC_BOOKING_FAQ_MOCK=1` always uses the local mocks (e.g. live
+ *   CMS but FAQs not updated yet).
  */
 import type { FAQ } from "@/data/faqs";
 import {
   mockBookingFaqsPiercing,
   mockBookingFaqsTattoo,
 } from "@/data/faqs";
+import { isMockContentMode } from "@/lib/content-mode";
 
 export type BookingFaqService = "piercing" | "tattoo";
 
@@ -55,9 +60,19 @@ function mockForService(service: BookingFaqService): FAQ[] {
     : [...mockBookingFaqsTattoo];
 }
 
+function bookingFaqUseLocalMocks(): boolean {
+  const raw = process.env.NEXT_PUBLIC_BOOKING_FAQ_MOCK?.trim().toLowerCase();
+  if (raw === "1" || raw === "true") return true;
+  return isMockContentMode();
+}
+
 export async function fetchBookingFaqs(
   service: BookingFaqService
 ): Promise<FAQ[]> {
+  if (bookingFaqUseLocalMocks()) {
+    return mockForService(service);
+  }
+
   const base = apiBase();
   if (!base) {
     return mockForService(service);

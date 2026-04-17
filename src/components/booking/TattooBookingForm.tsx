@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
-import { tattooStyles } from "@/data/booking";
 import { useBookingSchedule } from "@/hooks/use-booking-schedule";
+import { getBookingEmailValidationError } from "@/lib/booking-email";
 import { cn } from "@/lib/helpers";
 import { getBookingV1Base, postBookingCreate } from "@/lib/booking-v1";
 import { RECAPTCHA_SITE_KEY } from "@/lib/recaptcha";
@@ -21,7 +21,10 @@ function tattooProductId(): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-type WizardStep = 1 | 2 | 3;
+type WizardStep = 1 | 2;
+
+/** Sent when the style step was removed; CMS can treat as “to discuss”. */
+const TATTOO_STYLE_API_VALUE = "Not specified";
 
 type TattooBookingFormProps = {
   className?: string;
@@ -42,7 +45,6 @@ export function TattooBookingForm({
   const [step, setStep] = useState<WizardStep>(1);
 
   const [step1, setStep1] = useState<TattooBookingStep1Values | null>(null);
-  const [tattooStyle, setTattooStyle] = useState<string | null>(null);
   const [design, setDesign] = useState<string | null>(null);
   const [explanation, setExplanation] = useState("");
 
@@ -55,6 +57,7 @@ export function TattooBookingForm({
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const apiConfigured = getBookingV1Base().length > 0;
   const {
@@ -109,6 +112,13 @@ export function TattooBookingForm({
     }
     if (!termsAccepted) return;
 
+    const emailValidation = getBookingEmailValidationError(email);
+    if (emailValidation) {
+      setEmailError(emailValidation);
+      return;
+    }
+    setEmailError(null);
+
     const payload: TattooBookingStep1Values = {
       fullName: fullName.trim(),
       email: email.trim(),
@@ -123,13 +133,8 @@ export function TattooBookingForm({
     setStep(2);
   };
 
-  const handleStep2Next = () => {
-    if (!tattooStyle) return;
-    setStep(3);
-  };
-
   const handleFinalSubmit = async () => {
-    if (!step1 || !tattooStyle) return;
+    if (!step1) return;
     setSubmitError(null);
     setSubmitting(true);
 
@@ -151,7 +156,7 @@ export function TattooBookingForm({
 
     const wizardPayload: TattooBookingWizardPayload = {
       ...step1,
-      style: tattooStyle,
+      style: TATTOO_STYLE_API_VALUE,
       designDataUrl: design,
       explanation: explanation.trim(),
     };
@@ -165,7 +170,7 @@ export function TattooBookingForm({
       booking_time: step1.time,
       terms_accepted: step1.termsAccepted,
       service: "tattoo",
-      tattoo_style: tattooStyle,
+      tattoo_style: TATTOO_STYLE_API_VALUE,
     };
     if (design) body.design = design;
     if (explanation.trim()) body.explanation = explanation.trim();
@@ -195,7 +200,6 @@ export function TattooBookingForm({
     setPhase("wizard");
     setStep(1);
     setStep1(null);
-    setTattooStyle(null);
     setDesign(null);
     setExplanation("");
     setFullName("");
@@ -206,6 +210,7 @@ export function TattooBookingForm({
     setTermsAccepted(false);
     setSubmitError(null);
     setSubmitting(false);
+    setEmailError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -238,7 +243,7 @@ export function TattooBookingForm({
     );
   }
 
-  const progressLabels = ["Details", "Style", "Review"] as const;
+  const progressLabels = ["Details", "Review"] as const;
 
   return (
     <div className={className}>
@@ -309,11 +314,23 @@ export function TattooBookingForm({
                 name="email"
                 type="email"
                 value={email}
-                onChange={(ev) => setEmail(ev.target.value)}
+                onChange={(ev) => {
+                  setEmail(ev.target.value);
+                  setEmailError(null);
+                }}
                 placeholder="Enter your email"
                 required
                 autoComplete="email"
+                aria-invalid={emailError ? true : undefined}
+                aria-describedby={
+                  emailError ? "tattoo-email-error" : undefined
+                }
               />
+              {emailError ? (
+                <p id="tattoo-email-error" className="booking-form-field-error">
+                  {emailError}
+                </p>
+              ) : null}
             </div>
             <div>
               <label htmlFor="tattoo-phone">Phone</label>
@@ -367,7 +384,7 @@ export function TattooBookingForm({
               availableDates.length === 0 ? (
                 <small className="booking-page__config-hint">
                   {scheduleMode === "working-hours"
-                    ? "No bookable days in the next window — check working hours in the CMS."
+                    ? "No bookable days in the next window. Check working hours in the CMS."
                     : "No dates returned. Check shop schedule for tattoo in the CMS."}
                 </small>
               ) : null}
@@ -397,7 +414,7 @@ export function TattooBookingForm({
                 </option>
                 {availableTimeSlots.map((slot) => (
                   <option key={slot.time} value={slot.time}>
-                    {slot.time} – {slot.end_time}
+                    {slot.time} - {slot.end_time}
                   </option>
                 ))}
               </select>
@@ -480,56 +497,7 @@ export function TattooBookingForm({
         </form>
       ) : null}
 
-      {step === 2 ? (
-        <div className="booking-wizard__panel">
-          <p className="booking-wizard__sub">
-            Our tattoo stations are fully sterilized, we use disposable
-            single-use needles, and the whole process follows hygienic practices
-            according to Vancouver Coastal Health standards. Our tattoo artists
-            are among the best in Vancouver.
-          </p>
-          <div
-            className="booking-wizard__options"
-            role="radiogroup"
-            aria-label="Tattoo style"
-          >
-            {tattooStyles.map((s) => (
-              <button
-                key={s}
-                type="button"
-                role="radio"
-                aria-checked={tattooStyle === s}
-                className={cn(
-                  "booking-wizard__option",
-                  tattooStyle === s && "booking-wizard__option--selected"
-                )}
-                onClick={() => setTattooStyle(s)}
-              >
-                <span className="booking-wizard__option-title">{s}</span>
-              </button>
-            ))}
-          </div>
-          <div className="booking-wizard__nav">
-            <button
-              type="button"
-              className="booking-wizard__btn booking-wizard__btn--ghost"
-              onClick={goBack}
-            >
-              Back
-            </button>
-            <button
-              type="button"
-              className="booking-wizard__btn booking-wizard__btn--primary"
-              disabled={!tattooStyle}
-              onClick={handleStep2Next}
-            >
-              Continue
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {step === 3 && step1 && tattooStyle ? (
+      {step === 2 && step1 ? (
         <div className="booking-wizard__panel">
           <h2 className="booking-wizard__heading">Review &amp; confirm</h2>
           <p className="booking-wizard__sub">
@@ -550,17 +518,17 @@ export function TattooBookingForm({
                 {step1.date} at {step1.time}
               </span>
             </li>
-            <li className="booking-wizard__summary-row">
+            <li className="booking-wizard__summary-row booking-wizard__summary-row--contact-stack">
               <span className="booking-wizard__summary-label">Contact</span>
-              <span className="booking-wizard__summary-value">
-                {step1.fullName} · {step1.email} · {step1.phone}
-              </span>
-            </li>
-            <li className="booking-wizard__summary-row">
-              <span className="booking-wizard__summary-label">Style</span>
-              <span className="booking-wizard__summary-value">
-                {tattooStyle}
-              </span>
+              <div className="booking-wizard__summary-contact-block">
+                <span className="booking-wizard__summary-contact-name">
+                  {step1.fullName}
+                </span>
+                <span className="booking-wizard__summary-contact-email">
+                  {step1.email}
+                </span>
+                <span>{step1.phone}</span>
+              </div>
             </li>
             <li className="booking-wizard__summary-row">
               <span className="booking-wizard__summary-label">Design</span>

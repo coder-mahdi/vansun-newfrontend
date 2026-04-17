@@ -21,9 +21,31 @@ export const PIERCING_SERVICE_BASE_CAD = 39;
 /** Lip / mouth sheet: price is per piercing (each hole), e.g. ×2 in cart = 2× this. */
 export const PIERCING_LIP_CAD = 19;
 export const PIERCING_PRICE_BY_ID_CAD: Record<string, number> = {
+  "angel-bites": 75,
   "anti-eyebrow": 59,
-  tongue: 59,
+  "anti-tragus": 59,
+  ashley: 45,
+  daith: 59,
+  flat: 39,
+  "hidden-helix": 45,
+  "inverted-lobe": 49,
+  jestrum: 49,
+  labret: 39,
+  lobe: 19,
+  medusa: 45,
+  monroe: 45,
+  navel: 45,
   nipple: 59,
+  rook: 49,
+  septum: 45,
+  "shark-bites": 75,
+  "stacked-lobe": 19,
+  "snake-bites": 75,
+  tongue: 59,
+  tragus: 45,
+  "upper-lobe": 19,
+  "vertical-helix": 45,
+  "vertical-labret": 59,
 };
 
 export const PIERCING_IMAGE_META: Record<
@@ -52,7 +74,7 @@ export const PIERCING_IMAGE_META: Record<
 
 const DEFAULT_HIT = 10;
 
-/** Face & body (image 1) — coordinates tuned for face-body layout; adjust as needed. */
+/** Face & body (image 1). Coordinates tuned for face-body layout; adjust as needed. */
 const faceBody: PiercingSelectionDef[] = [
   {
     id: "nostril",
@@ -114,7 +136,7 @@ const faceBody: PiercingSelectionDef[] = [
   },
 ];
 
-/** Lip / mouth (image 2) — approximate; refine when artwork is final. */
+/** Lip / mouth (image 2). Approximate; refine when artwork is final. */
 const lips: PiercingSelectionDef[] = [
   { id: "medusa", label: "Medusa", image: "lips", pricing: "lip", x: 50, y: 34 },
   { id: "jestrum", label: "Jestrum", image: "lips", pricing: "lip", x: 50, y: 42 },
@@ -150,6 +172,7 @@ const lips: PiercingSelectionDef[] = [
 
 const earLabels: { id: string; label: string }[] = [
   { id: "helix", label: "Helix" },
+  { id: "flat", label: "Flat" },
   { id: "forward-helix", label: "Forward Helix" },
   { id: "vertical-helix", label: "Vertical Helix" },
   { id: "hidden-helix", label: "Hidden Helix" },

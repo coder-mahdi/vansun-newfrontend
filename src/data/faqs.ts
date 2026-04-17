@@ -2,22 +2,34 @@ export type FAQ = { id: string; question: string; answer: string };
 
 export const mockBookingFaqsPiercing: FAQ[] = [
   {
-    id: "piercing-age-id",
-    question: "Do I need ID for a piercing appointment?",
+    id: "before-piercing",
+    question: "What should I do before getting a piercing?",
     answer:
-      "Yes. Please bring government-issued photo ID. For minors, we follow studio policy and provincial requirements; contact us before booking if you are under 18.",
+      "Make sure you're well-rested and hydrated. Avoid alcohol or blood thinners like aspirin 24 hours before your appointment.",
   },
   {
-    id: "piercing-healing",
-    question: "How long does healing take?",
+    id: "healing-time",
+    question: "How long will it take for my piercing to heal?",
     answer:
-      "It depends on the placement. Many piercings need several weeks to months for initial healing. We will give you written aftercare and check-in guidance at your appointment.",
+      "Healing times vary depending on the type of piercing. Most piercings take between 6-12 weeks, but cartilage piercings can take up to a year.",
   },
   {
-    id: "piercing-jewelry",
-    question: "Can I bring my own jewelry?",
+    id: "change-jewelry-after",
+    question: "Can I change my jewelry right after getting pierced?",
     answer:
-      "Initial piercings use implant-grade jewelry we approve in-studio. Outside jewelry may not be suitable for fresh work; we are happy to discuss options when you arrive.",
+      "It's important to leave the original jewelry in place until it's fully healed. Changing jewelry too soon can lead to irritation or infection.",
+  },
+  {
+    id: "infected-piercing",
+    question: "What should I do if my piercing gets infected?",
+    answer:
+      "If you suspect an infection, clean the piercing with saline solution and consult a professional piercer or healthcare provider. Don't remove the jewelry until you're advised to.",
+  },
+  {
+    id: "piercing-pain",
+    question: "Does getting a piercing hurt?",
+    answer:
+      "Pain levels vary depending on the area of the body being pierced and individual pain tolerance. Some people find ear piercings to be relatively painless, while cartilage piercings may feel more intense. The pain is usually brief and fades quickly.",
   },
 ];
 

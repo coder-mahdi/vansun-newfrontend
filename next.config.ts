@@ -39,6 +39,20 @@ function remotePatternsFromEnv(): NonNullable<
 }
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/blogs/:slug",
+        destination: "/b/:slug",
+        permanent: true,
+      },
+      {
+        source: "/blog/:slug",
+        destination: "/b/:slug",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

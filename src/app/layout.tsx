@@ -11,10 +11,11 @@ import "@/styles/globals.scss";
 
 export const metadata: Metadata = {
   title: {
-    default: "Vansun",
-    template: "%s | Vansun",
+    default: "Vansun Studio",
+    template: "%s | Vansun Studio",
   },
-  description: "Vansun studio",
+  description:
+    "Vansun Studio: professional tattoo and piercing on Granville Street, Vancouver.",
   manifest: brandWebManifestPath,
   icons: {
     icon: [
@@ -30,9 +31,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: "VanSun Studio",
+    address: {
+      streetAddress: "Granville St",
+      addressLocality: "Vancouver",
+    },
+  };
+
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full min-h-dvh flex flex-col font-sans">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
         <SiteHeader />
         <main className="relative z-0 flex-1">{children}</main>
         <SiteFooter />

@@ -1,7 +1,7 @@
 // Component styles: one import chain; consumed only from globals.scss
 
 @import "about/about-hero";
-@import "about/piercing-room-section";
+@import "about/about-studio-sections";
 @import "about/piercer-section";
 @import "about/booking-notice-section";
 
@@ -10,6 +10,7 @@
 @import "blogs/blog-grid";
 @import "blogs/blog-hero";
 @import "blogs/blog-post-page";
+@import "blogs/blog-post-internal-links";
 @import "blogs/blogs-page";
 @import "blogs/related-blogs-section";
 
@@ -40,6 +41,7 @@
 @import "home/hero-section";
 @import "home/hero-slider";
 @import "home/jewelry-gallery-section";
+@import "home/piercing-showcase";
 @import "home/services-section";
 
 @import "legal/terms-and-conditions";
