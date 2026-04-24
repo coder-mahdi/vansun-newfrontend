@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { PiercingVisualPicker } from "@/components/booking/PiercingVisualPicker";
 import { JEWELRY_TIER_PRICE_CAD } from "@/data/jewelry-tier-pricing";
@@ -27,6 +27,7 @@ import { RECAPTCHA_SITE_KEY } from "@/lib/recaptcha";
 import type {
   PiercingBookingStep1Values,
   PiercingBookingWizardPayload,
+  PiercingJewelrySlotLine,
 } from "@/types/booking";
 
 function formatCad(value: number): string {
@@ -55,6 +56,31 @@ const PIERCER_NOTIFICATION_EMAIL = "masiworld93@gmail.com";
 function jewelryTierLabel(tier: JewelryTier): string {
   if (tier === "pro-premium") return "Pro premium";
   return tier.slice(0, 1).toUpperCase() + tier.slice(1);
+}
+
+type SlotJewelryPick = { tier: JewelryTier; code: string | null };
+
+function filterJewelryForPiercingSlot(
+  items: JewelryStoreItem[],
+  tier: JewelryTier,
+  piercingId: string,
+  brokenCodes: Set<string>
+): JewelryStoreItem[] {
+  const def = getPiercingSelectionDef(piercingId);
+  const areas = new Set<JewelryUsageArea>();
+  if (def) {
+    if (def.image === "face-body") areas.add("face-and-body");
+    else if (def.image === "lips") areas.add("lips");
+    else if (def.image === "ears") areas.add("ear");
+  }
+  const typeIds = new Set([piercingId]);
+  return items.filter((item) => {
+    if (brokenCodes.has(item.code)) return false;
+    if (item.tier !== tier) return false;
+    if (!item.usage_areas.some((area) => areas.has(area))) return false;
+    if (item.piercing_type_ids.length === 0) return true;
+    return item.piercing_type_ids.some((pid) => typeIds.has(pid));
+  });
 }
 
 function JewelryImageLightbox({
@@ -188,14 +214,14 @@ export function PiercingBookingForm({
     () => flattenPiercingQuantities(piercingQuantities),
     [piercingQuantities]
   );
+  const slotsFingerprint = useMemo(
+    () => expandedPiercingIds.join("\0"),
+    [expandedPiercingIds]
+  );
   const [jewelryChoice, setJewelryChoice] = useState<
     "change-jewelry" | "bring-own"
   >("change-jewelry");
-  const [selectedJewelryTier, setSelectedJewelryTier] =
-    useState<JewelryTier>("basic");
-  const [selectedJewelryCode, setSelectedJewelryCode] = useState<string | null>(
-    null
-  );
+  const [jewelryBySlot, setJewelryBySlot] = useState<SlotJewelryPick[]>([]);
   const [brokenJewelryCodes, setBrokenJewelryCodes] = useState<Set<string>>(
     () => new Set()
   );
@@ -220,6 +246,8 @@ export function PiercingBookingForm({
     urls: string[];
     index: number;
   } | null>(null);
+  const wizardTopRef = useRef<HTMLDivElement | null>(null);
+  const successMessageRef = useRef<HTMLDivElement | null>(null);
 
   const apiConfigured = getBookingV1Base().length > 0;
   const {
@@ -233,54 +261,16 @@ export function PiercingBookingForm({
     scheduleMode,
   } = useBookingSchedule("piercing", date);
 
-  const selectedUsageAreas = useMemo(() => {
-    const out = new Set<JewelryUsageArea>();
-    for (const id of Object.keys(piercingQuantities)) {
-      if ((piercingQuantities[id] ?? 0) <= 0) continue;
-      const def = getPiercingSelectionDef(id);
-      if (!def) continue;
-      if (def.image === "face-body") out.add("face-and-body");
-      else if (def.image === "lips") out.add("lips");
-      else if (def.image === "ears") out.add("ear");
-    }
-    return out;
-  }, [piercingQuantities]);
-
-  const selectedPiercingTypeIds = useMemo(() => {
-    return new Set(
-      Object.entries(piercingQuantities)
-        .filter(([, q]) => q > 0)
-        .map(([id]) => id)
-    );
-  }, [piercingQuantities]);
-
   const catalogUsesPiercingTypeFilter = useMemo(
     () => jewelryItems.some((i) => i.piercing_type_ids.length > 0),
     [jewelryItems]
   );
 
-  const filteredJewelryItems = useMemo(() => {
-    return jewelryItems.filter((item) => {
-      if (item.tier !== selectedJewelryTier) return false;
-      if (!item.usage_areas.some((area) => selectedUsageAreas.has(area))) {
-        return false;
-      }
-      if (item.piercing_type_ids.length === 0) return true;
-      return item.piercing_type_ids.some((pid) =>
-        selectedPiercingTypeIds.has(pid)
-      );
-    });
-  }, [
-    jewelryItems,
-    selectedJewelryTier,
-    selectedUsageAreas,
-    selectedPiercingTypeIds,
-  ]);
-
-  const visibleJewelryItems = useMemo(
-    () => filteredJewelryItems.filter((item) => !brokenJewelryCodes.has(item.code)),
-    [filteredJewelryItems, brokenJewelryCodes]
-  );
+  const jewelryBySlotAligned = useMemo((): SlotJewelryPick[] => {
+    return expandedPiercingIds.map(
+      (_, i) => jewelryBySlot[i] ?? { tier: "basic", code: null }
+    );
+  }, [expandedPiercingIds, jewelryBySlot]);
 
   const totals = useMemo(() => {
     let service = 0;
@@ -289,10 +279,12 @@ export function PiercingBookingForm({
       if (n <= 0) continue;
       service += getPiercingPriceCadById(id) * n;
     }
-    const jewelry =
-      jewelryChoice === "change-jewelry"
-        ? JEWELRY_TIER_PRICE_CAD[selectedJewelryTier]
-        : 0;
+    let jewelry = 0;
+    if (jewelryChoice === "change-jewelry") {
+      for (const pick of jewelryBySlotAligned) {
+        jewelry += JEWELRY_TIER_PRICE_CAD[pick.tier];
+      }
+    }
     const aftercare = aftercareKit ? PIERCING_AFTERCARE_KIT_PRICE_CAD : 0;
     const subtotal = service + jewelry + aftercare;
     const tax = subtotal * SALES_TAX_RATE;
@@ -304,7 +296,7 @@ export function PiercingBookingForm({
       taxCad: tax,
       totalCad: subtotal + tax,
     };
-  }, [piercingQuantities, jewelryChoice, selectedJewelryTier, aftercareKit]);
+  }, [piercingQuantities, jewelryChoice, jewelryBySlotAligned, aftercareKit]);
 
   const incrementPiercing = (id: string) => {
     setPiercingQuantities((prev) => ({
@@ -319,6 +311,16 @@ export function PiercingBookingForm({
       const q = (next[id] ?? 0) - 1;
       if (q <= 0) delete next[id];
       else next[id] = q;
+      return next;
+    });
+  };
+
+  const updateSlotJewelry = (index: number, patch: Partial<SlotJewelryPick>) => {
+    setJewelryBySlot((prev) => {
+      const next = expandedPiercingIds.map(
+        (_, j) => prev[j] ?? { tier: "basic" as JewelryTier, code: null }
+      );
+      next[index] = { ...next[index], ...patch };
       return next;
     });
   };
@@ -365,11 +367,77 @@ export function PiercingBookingForm({
   }, [step]);
 
   useEffect(() => {
-    if (jewelryChoice !== "change-jewelry") return;
-    if (!selectedJewelryCode) return;
-    const exists = filteredJewelryItems.some((j) => j.code === selectedJewelryCode);
-    if (!exists) setSelectedJewelryCode(null);
-  }, [jewelryChoice, selectedJewelryCode, filteredJewelryItems]);
+    if (phase !== "wizard") return;
+    if (step === 1) return;
+    wizardTopRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+  }, [step, phase]);
+
+  useEffect(() => {
+    if (phase !== "success") return;
+    successMessageRef.current?.scrollIntoView({
+      block: "start",
+      behavior: "auto",
+    });
+  }, [phase]);
+
+  useEffect(() => {
+    const ids =
+      slotsFingerprint.length > 0 ? slotsFingerprint.split("\0") : [];
+
+    if (jewelryChoice !== "change-jewelry") {
+      setJewelryBySlot((prev) => {
+        const next = ids.map(() => ({
+          tier: "basic" as JewelryTier,
+          code: null,
+        }));
+        if (
+          next.length === prev.length &&
+          next.every(
+            (s, i) => s.code === prev[i]?.code && s.tier === prev[i]?.tier
+          )
+        ) {
+          return prev;
+        }
+        return next;
+      });
+      return;
+    }
+
+    setJewelryBySlot((prev) => {
+      const base =
+        ids.length !== prev.length
+          ? ids.map(() => ({ tier: "basic" as JewelryTier, code: null }))
+          : ids.map(
+              (_, i) =>
+                prev[i] ?? { tier: "basic" as JewelryTier, code: null }
+            );
+
+      const next = base.map((slot, i) => {
+        const pid = ids[i] ?? "";
+        if (!pid) return slot;
+        const visible = filterJewelryForPiercingSlot(
+          jewelryItems,
+          slot.tier,
+          pid,
+          brokenJewelryCodes
+        );
+        if (slot.code && !visible.some((j) => j.code === slot.code)) {
+          return { ...slot, code: null };
+        }
+        return slot;
+      });
+
+      if (
+        next.length === prev.length &&
+        next.every(
+          (s, i) => s.code === prev[i]?.code && s.tier === prev[i]?.tier
+        )
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, [slotsFingerprint, jewelryItems, brokenJewelryCodes, jewelryChoice]);
 
   const goBack = () => {
     setSubmitError(null);
@@ -412,7 +480,12 @@ export function PiercingBookingForm({
   };
 
   const handleStep3Next = () => {
-    if (jewelryChoice === "change-jewelry" && !selectedJewelryCode) return;
+    if (
+      jewelryChoice === "change-jewelry" &&
+      jewelryBySlotAligned.some((s) => !s.code)
+    ) {
+      return;
+    }
     setStep(4);
   };
 
@@ -420,7 +493,8 @@ export function PiercingBookingForm({
     if (
       !step1 ||
       totalPiercingCount(piercingQuantities) === 0 ||
-      (jewelryChoice === "change-jewelry" && !selectedJewelryCode)
+      (jewelryChoice === "change-jewelry" &&
+        jewelryBySlotAligned.some((s) => !s.code))
     ) {
       return;
     }
@@ -458,20 +532,44 @@ export function PiercingBookingForm({
         };
       });
 
-    const selectedJewelryItem =
-      jewelryChoice === "change-jewelry" && selectedJewelryCode
-        ? jewelryItems.find((j) => j.code === selectedJewelryCode)
-        : undefined;
-    const jewelryImageUrl =
-      selectedJewelryItem?.image_url?.trim() || null;
+    const jewelrySlotsResolved: PiercingJewelrySlotLine[] =
+      jewelryChoice === "change-jewelry"
+        ? expandedPiercingIds.map((piercingId, i) => {
+            const pick = jewelryBySlotAligned[i]!;
+            const code = pick.code!;
+            const item = jewelryItems.find((j) => j.code === code);
+            return {
+              piercingId,
+              tier: pick.tier,
+              code,
+              imageUrl: item?.image_url?.trim() || null,
+              feeCad: JEWELRY_TIER_PRICE_CAD[pick.tier],
+            };
+          })
+        : [];
+
+    const jewelryImageUrl = jewelrySlotsResolved[0]?.imageUrl ?? null;
+    const jewelryCodeJoined =
+      jewelrySlotsResolved.length > 0
+        ? jewelrySlotsResolved.map((s) => s.code).join(", ")
+        : null;
+    const primaryJewelryCode = jewelrySlotsResolved[0]?.code ?? null;
+    const primaryJewelryTier = jewelrySlotsResolved[0]?.tier ?? null;
 
     const selectedJewelryDetails =
       jewelryChoice === "change-jewelry"
         ? {
             choice: jewelryChoice,
-            tier: selectedJewelryTier,
-            code: selectedJewelryCode,
             fee_cad: totals.jewelryCad,
+            slots: jewelrySlotsResolved.map((s) => ({
+              piercing_id: s.piercingId,
+              tier: s.tier,
+              code: s.code,
+              fee_cad: s.feeCad,
+              image_url: s.imageUrl,
+            })),
+            tier: primaryJewelryTier,
+            code: primaryJewelryCode,
             image_url: jewelryImageUrl,
           }
         : {
@@ -480,7 +578,16 @@ export function PiercingBookingForm({
             code: null,
             fee_cad: 0,
             image_url: null,
+            slots: [],
           };
+
+    const jewelryIdForApi =
+      jewelryChoice === "change-jewelry"
+        ? jewelrySlotsResolved.length > 1
+          ? "multi-slot"
+          : (primaryJewelryCode ?? "change-jewelry")
+        : "bring-own";
+
     const wizardPayload: PiercingBookingWizardPayload = {
       ...step1,
       piercingQuantities: Object.fromEntries(
@@ -488,14 +595,13 @@ export function PiercingBookingForm({
       ),
       piercingIds: expandedPiercingIds,
       jewelryChoice,
-      jewelryTier: jewelryChoice === "change-jewelry" ? selectedJewelryTier : null,
-      jewelryCode: jewelryChoice === "change-jewelry" ? selectedJewelryCode : null,
+      jewelryTier: primaryJewelryTier,
+      jewelryCode: jewelryCodeJoined,
+      jewelrySlots:
+        jewelryChoice === "change-jewelry" ? jewelrySlotsResolved : null,
       jewelryImageUrl,
       piercingTypeId: "multi",
-      jewelryId:
-        jewelryChoice === "change-jewelry"
-          ? (selectedJewelryCode ?? "change-jewelry")
-          : "bring-own",
+      jewelryId: jewelryIdForApi,
       aftercareKit,
       notes: notes.trim(),
       totalCad,
@@ -516,15 +622,18 @@ export function PiercingBookingForm({
       piercing_quantities: Object.fromEntries(
         Object.entries(piercingQuantities).filter(([, q]) => q > 0)
       ),
-      jewelry_id:
-        jewelryChoice === "change-jewelry"
-          ? (selectedJewelryCode ?? "change-jewelry")
-          : "bring-own",
+      jewelry_id: jewelryIdForApi,
       jewelry_choice: jewelryChoice,
-      jewelry_tier:
-        jewelryChoice === "change-jewelry" ? selectedJewelryTier : undefined,
-      jewelry_code:
-        jewelryChoice === "change-jewelry" ? selectedJewelryCode : undefined,
+      jewelry_tier: primaryJewelryTier ?? undefined,
+      jewelry_code: jewelryCodeJoined ?? undefined,
+      jewelry_codes: jewelrySlotsResolved.map((s) => s.code),
+      jewelry_slots: jewelrySlotsResolved.map((s) => ({
+        piercing_id: s.piercingId,
+        tier: s.tier,
+        code: s.code,
+        fee_cad: s.feeCad,
+        image_url: s.imageUrl,
+      })),
       jewelry_image_url:
         jewelryChoice === "change-jewelry" && jewelryImageUrl
           ? jewelryImageUrl
@@ -573,8 +682,7 @@ export function PiercingBookingForm({
     setStep1(null);
     setPiercingQuantities({});
     setJewelryChoice("change-jewelry");
-    setSelectedJewelryTier("basic");
-    setSelectedJewelryCode(null);
+    setJewelryBySlot([]);
     setBrokenJewelryCodes(new Set());
     setAftercareKit(false);
     setNotes("");
@@ -588,7 +696,10 @@ export function PiercingBookingForm({
 
   if (phase === "success") {
     return (
-      <div className={cn("booking-page__success-message", className)}>
+      <div
+        ref={successMessageRef}
+        className={cn("booking-page__success-message", className)}
+      >
         <p>
           Your piercing appointment request was received.
           <br />
@@ -622,7 +733,7 @@ export function PiercingBookingForm({
   const progressLabels = ["Details", "Piercings", "Choose jewelry", "Review"] as const;
 
   return (
-    <div className={className}>
+    <div ref={wizardTopRef} className={className}>
       {step > 1 ? (
         <div
           className="booking-wizard__progress"
@@ -870,46 +981,11 @@ export function PiercingBookingForm({
       {step === 3 && step1 ? (
         <div className="booking-wizard__panel">
           <h2 className="booking-wizard__heading">Choose jewelry</h2>
-
-          {jewelryChoice === "change-jewelry" ? (
-            <div className="booking-wizard__jewelry-field">
-              <p className="booking-wizard__jewelry-field-label">Tier</p>
-              <p className="booking-wizard__jewelry-field-hint booking-wizard__jewelry-field-hint--tier">
-                Choose a jewelry price tier below. Click a tier to show matching
-                pieces.
-              </p>
-            </div>
-          ) : null}
-
-          <div className="booking-wizard__options booking-wizard__options--tiers">
-            {JEWELRY_TIERS.map((tier) => (
-              <button
-                key={tier}
-                type="button"
-                className={cn(
-                  "booking-wizard__option",
-                  jewelryChoice === "change-jewelry" &&
-                    selectedJewelryTier === tier &&
-                    "booking-wizard__option--selected"
-                )}
-                aria-pressed={
-                  jewelryChoice === "change-jewelry" && selectedJewelryTier === tier
-                }
-                onClick={() => {
-                  setJewelryChoice("change-jewelry");
-                  setSelectedJewelryTier(tier);
-                  setSelectedJewelryCode(null);
-                }}
-              >
-                <span className="booking-wizard__option-title">
-                  {jewelryTierLabel(tier)}
-                </span>
-                <span className="booking-wizard__option-meta">
-                  {formatCad(JEWELRY_TIER_PRICE_CAD[tier])}
-                </span>
-              </button>
-            ))}
-          </div>
+          <p className="booking-wizard__sub">
+            {expandedPiercingIds.length > 1
+              ? `You selected ${expandedPiercingIds.length} piercings. For each one below, choose a tier and a studio piece, in order. Each line has its own fee.`
+              : "Choose a jewelry price tier, then pick the studio piece you want for this piercing."}
+          </p>
 
           <div className="booking-wizard__options booking-wizard__options--single-row">
             <button
@@ -928,6 +1004,12 @@ export function PiercingBookingForm({
 
           {jewelryChoice === "change-jewelry" ? (
             <>
+              <div className="booking-wizard__jewelry-field">
+                <p className="booking-wizard__jewelry-field-label">Studio jewelry</p>
+                <p className="booking-wizard__jewelry-field-hint booking-wizard__jewelry-field-hint--tier">
+                  Pick a tier and matching catalog piece for each piercing. Tiers can differ per piercing.
+                </p>
+              </div>
               {jewelryError ? (
                 <div className="booking-wizard__error" role="alert">
                   {jewelryError}
@@ -935,84 +1017,143 @@ export function PiercingBookingForm({
               ) : null}
               {jewelryLoading ? (
                 <p className="booking-wizard__sub">Loading jewelry…</p>
-              ) : visibleJewelryItems.length === 0 ? (
+              ) : jewelryItems.length === 0 ? (
                 <p className="booking-wizard__sub">
-                  {jewelryItems.length === 0
-                    ? getBookingV1Base()
-                      ? "No studio jewelry is available to choose yet, or the list could not be loaded."
-                      : "Studio jewelry is unavailable because the booking API URL is not configured."
-                    : filteredJewelryItems.length === 0
-                      ? catalogUsesPiercingTypeFilter
-                        ? "No jewelry matches placement, tier, and piercing-type tags for your selection. Try another tier, or adjust piercings in the previous step."
-                        : "No jewelry in the catalog matches your piercing placement and the tier you selected. Try another tier, or ask the studio to tag pieces for these areas in WordPress."
-                      : "Jewelry thumbnails failed to load. Try again, pick another piece, or choose “bring your own”."}
+                  {getBookingV1Base()
+                    ? "No studio jewelry is available to choose yet, or the list could not be loaded."
+                    : "Studio jewelry is unavailable because the booking API URL is not configured."}
                 </p>
               ) : (
-                <div className="booking-wizard__jewelry-grid">
-                  {visibleJewelryItems.map((item) => (
+                expandedPiercingIds.map((piercingId, slotIndex) => {
+                  const pick =
+                    jewelryBySlotAligned[slotIndex] ?? {
+                      tier: "basic" as JewelryTier,
+                      code: null,
+                    };
+                  const visibleForSlot = filterJewelryForPiercingSlot(
+                    jewelryItems,
+                    pick.tier,
+                    piercingId,
+                    brokenJewelryCodes
+                  );
+                  const def = getPiercingSelectionDef(piercingId);
+                  const slotLabel = def?.label ?? piercingId;
+                  return (
                     <div
-                      key={item.code}
+                      key={`${piercingId}-${slotIndex}`}
                       className={cn(
-                        "booking-wizard__jewelry-card",
-                        selectedJewelryCode === item.code &&
-                          "booking-wizard__jewelry-card--selected"
+                        "booking-wizard__jewelry-slot",
+                        slotIndex > 0 && "booking-wizard__jewelry-slot--follow"
                       )}
                     >
-                      <button
-                        type="button"
-                        className="booking-wizard__jewelry-card-main"
-                        onClick={() => setSelectedJewelryCode(item.code)}
-                      >
-                        <img
-                          src={item.image_url}
-                          alt={`Jewelry ${item.code}`}
-                          className="booking-wizard__jewelry-image"
-                          decoding="async"
-                          onError={() => {
-                            setBrokenJewelryCodes((prev) => {
-                              if (prev.has(item.code)) return prev;
-                              const next = new Set(prev);
-                              next.add(item.code);
-                              return next;
-                            });
-                          }}
-                        />
-                        <div className="booking-wizard__jewelry-code">
-                          <span className="booking-wizard__jewelry-code-label">
-                            Jewelry code
-                          </span>
-                          <span className="booking-wizard__jewelry-code-value">
-                            {item.code}
-                          </span>
-                        </div>
-                      </button>
-                      {item.gallery_urls.length > 0 ? (
-                        <div className="booking-wizard__jewelry-thumbs">
-                          {item.gallery_urls.map((url, gi) => (
-                            <button
-                              key={`${item.code}-g-${gi}`}
-                              type="button"
-                              className="booking-wizard__jewelry-thumb"
-                              aria-label={`Larger photo ${gi + 2} for ${item.code}`}
-                              onClick={() =>
-                                setJewelryLightbox({
-                                  urls: [item.image_url, ...item.gallery_urls],
-                                  index: gi + 1,
-                                })
-                              }
+                      <p className="booking-wizard__jewelry-field-label">
+                        Piercing {slotIndex + 1} of {expandedPiercingIds.length}:{" "}
+                        {slotLabel}
+                      </p>
+                      <div className="booking-wizard__options booking-wizard__options--tiers">
+                        {JEWELRY_TIERS.map((tier) => (
+                          <button
+                            key={tier}
+                            type="button"
+                            className={cn(
+                              "booking-wizard__option",
+                              pick.tier === tier && "booking-wizard__option--selected"
+                            )}
+                            aria-pressed={pick.tier === tier}
+                            onClick={() => {
+                              setJewelryChoice("change-jewelry");
+                              updateSlotJewelry(slotIndex, {
+                                tier,
+                                code: null,
+                              });
+                            }}
+                          >
+                            <span className="booking-wizard__option-title">
+                              {jewelryTierLabel(tier)}
+                            </span>
+                            <span className="booking-wizard__option-meta">
+                              {formatCad(JEWELRY_TIER_PRICE_CAD[tier])}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      {visibleForSlot.length === 0 ? (
+                        <p className="booking-wizard__sub">
+                          {catalogUsesPiercingTypeFilter
+                            ? "No jewelry in this tier matches this placement and catalog tags. Try another tier, or adjust piercings in the previous step."
+                            : "No jewelry in the catalog matches this placement for the tier you selected. Try another tier, or ask the studio to tag pieces in WordPress."}
+                        </p>
+                      ) : (
+                        <div className="booking-wizard__jewelry-grid">
+                          {visibleForSlot.map((item) => (
+                            <div
+                              key={`${slotIndex}-${item.code}`}
+                              className={cn(
+                                "booking-wizard__jewelry-card",
+                                pick.code === item.code &&
+                                  "booking-wizard__jewelry-card--selected"
+                              )}
                             >
-                              <img
-                                src={url}
-                                alt=""
-                                decoding="async"
-                              />
-                            </button>
+                              <button
+                                type="button"
+                                className="booking-wizard__jewelry-card-main"
+                                onClick={() => {
+                                  setJewelryChoice("change-jewelry");
+                                  updateSlotJewelry(slotIndex, {
+                                    code: item.code,
+                                  });
+                                }}
+                              >
+                                <img
+                                  src={item.image_url}
+                                  alt={`Jewelry ${item.code}`}
+                                  className="booking-wizard__jewelry-image"
+                                  decoding="async"
+                                  onError={() => {
+                                    setBrokenJewelryCodes((prev) => {
+                                      if (prev.has(item.code)) return prev;
+                                      const next = new Set(prev);
+                                      next.add(item.code);
+                                      return next;
+                                    });
+                                  }}
+                                />
+                                <div className="booking-wizard__jewelry-code">
+                                  <span className="booking-wizard__jewelry-code-label">
+                                    Jewelry code
+                                  </span>
+                                  <span className="booking-wizard__jewelry-code-value">
+                                    {item.code}
+                                  </span>
+                                </div>
+                              </button>
+                              {item.gallery_urls.length > 0 ? (
+                                <div className="booking-wizard__jewelry-thumbs">
+                                  {item.gallery_urls.map((url, gi) => (
+                                    <button
+                                      key={`${slotIndex}-${item.code}-g-${gi}`}
+                                      type="button"
+                                      className="booking-wizard__jewelry-thumb"
+                                      aria-label={`Larger photo ${gi + 2} for ${item.code}`}
+                                      onClick={() =>
+                                        setJewelryLightbox({
+                                          urls: [item.image_url, ...item.gallery_urls],
+                                          index: gi + 1,
+                                        })
+                                      }
+                                    >
+                                      <img src={url} alt="" decoding="async" />
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : null}
+                            </div>
                           ))}
                         </div>
-                      ) : null}
+                      )}
                     </div>
-                  ))}
-                </div>
+                  );
+                })
               )}
             </>
           ) : null}
@@ -1037,7 +1178,10 @@ export function PiercingBookingForm({
             <button
               type="button"
               className="booking-wizard__btn booking-wizard__btn--primary"
-              disabled={jewelryChoice === "change-jewelry" && !selectedJewelryCode}
+              disabled={
+                jewelryChoice === "change-jewelry" &&
+                jewelryBySlotAligned.some((s) => !s.code)
+              }
               onClick={handleStep3Next}
             >
               Continue
@@ -1112,22 +1256,37 @@ export function PiercingBookingForm({
             <li className="booking-wizard__summary-row booking-wizard__summary-row--block">
               <span className="booking-wizard__summary-label">Jewelry</span>
               <ul className="booking-wizard__piercing-lines">
-                <li className="booking-wizard__piercing-line">
-                  <span>
-                    {jewelryChoice === "change-jewelry"
-                      ? `${jewelryTierLabel(selectedJewelryTier)}${
-                          selectedJewelryCode
-                            ? ` · Jewelry code ${selectedJewelryCode}`
-                            : ""
-                        }`
-                      : "Bring your own jewelry"}
-                  </span>
-                  <span>
-                    {jewelryChoice === "change-jewelry"
-                      ? formatCad(totals.jewelryCad)
-                      : "-"}
-                  </span>
-                </li>
+                {jewelryChoice === "change-jewelry"
+                  ? expandedPiercingIds.map((piercingId, slotIndex) => {
+                      const pick = jewelryBySlotAligned[slotIndex];
+                      const def = getPiercingSelectionDef(piercingId);
+                      const label = def?.label ?? piercingId;
+                      const tierFee = pick
+                        ? JEWELRY_TIER_PRICE_CAD[pick.tier]
+                        : 0;
+                      const tierLabel = pick ? jewelryTierLabel(pick.tier) : "";
+                      const code = pick?.code;
+                      return (
+                        <li
+                          key={`jewelry-line-${piercingId}-${slotIndex}`}
+                          className="booking-wizard__piercing-line"
+                        >
+                          <span>
+                            #{slotIndex + 1} {label}
+                            {code
+                              ? ` · ${tierLabel} · code ${code}`
+                              : ` · ${tierLabel}`}
+                          </span>
+                          <span>{formatCad(tierFee)}</span>
+                        </li>
+                      );
+                    })
+                  : (
+                    <li className="booking-wizard__piercing-line">
+                      <span>Bring your own jewelry</span>
+                      <span>-</span>
+                    </li>
+                  )}
               </ul>
             </li>
             {aftercareKit ? (
