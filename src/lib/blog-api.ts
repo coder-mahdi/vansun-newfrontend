@@ -165,8 +165,37 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, "");
 }
 
+function decodeHtmlEntities(s: string): string {
+  const named: Record<string, string> = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " ",
+  };
+  return s
+    .replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (full, entity: string) => {
+      const key = entity.toLowerCase();
+      if (key in named) return named[key]!;
+      if (key.startsWith("#x")) {
+        const cp = Number.parseInt(key.slice(2), 16);
+        if (Number.isFinite(cp) && cp > 0) return String.fromCodePoint(cp);
+        return full;
+      }
+      if (key.startsWith("#")) {
+        const cp = Number.parseInt(key.slice(1), 10);
+        if (Number.isFinite(cp) && cp > 0) return String.fromCodePoint(cp);
+        return full;
+      }
+      return full;
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function stripHtml(s: string): string {
-  return s.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return decodeHtmlEntities(s.replace(/<[^>]*>/g, " "));
 }
 
 /** CMS may send a plain string or WordPress `{ rendered: "…" }`. */
@@ -254,9 +283,10 @@ function parseKeywordList(value: unknown): string[] {
 function normalizeBlogSummaryRow(row: unknown): BlogSummary | null {
   if (!row || typeof row !== "object") return null;
   const o = row as Record<string, unknown>;
-  const title =
+  const rawTitle =
     textFromRenderedField(o.title) ||
     String(o.post_title ?? o.name ?? "").trim();
+  const title = decodeHtmlEntities(rawTitle);
   const slugFromApi =
     String(o.slug ?? "").trim() || String(o.post_name ?? "").trim();
   const idRaw = String(o.id ?? "").trim();
@@ -271,7 +301,7 @@ function normalizeBlogSummaryRow(row: unknown): BlogSummary | null {
     String(o.summary ?? "").trim() ||
     textFromRenderedField(o.content) ||
     String(o.body ?? o.html ?? "").trim();
-  const excerpt = stripHtml(excerptSource).slice(0, 220) || title;
+  const excerpt = decodeHtmlEntities(stripHtml(excerptSource)).slice(0, 220) || title;
   const publishedAt = String(
     o.publishedAt ?? o.published_at ?? o.date_gmt ?? o.date ?? ""
   ).trim();
@@ -428,9 +458,9 @@ async function fetchBlogPostFromWpRest(slug: string): Promise<BlogPost | null> {
   if (!rawContent) return null;
   const content = rewriteWpHtmlAssetUrls(rawContent);
 
-  const excerptHtml = stripHtml(
+  const excerptHtml = decodeHtmlEntities(stripHtml(
     String(post.excerpt?.rendered ?? "").trim() || rawContent.slice(0, 400)
-  );
+  ));
   const publishedAt = String(post.date_gmt ?? post.date ?? "").trim() || "1970-01-01";
 
   const terms = post._embedded?.["wp:term"]?.flat() ?? [];
@@ -441,7 +471,7 @@ async function fetchBlogPostFromWpRest(slug: string): Promise<BlogPost | null> {
 
   const tagNames = terms
     .filter((t) => t.taxonomy === "post_tag")
-    .map((t) => String(t.name ?? "").trim())
+    .map((t) => decodeHtmlEntities(String(t.name ?? "").trim()))
     .filter(Boolean);
   const keyword =
     tagNames.length > 0 ? tagNames.join(", ") : "blog";
