@@ -87,3 +87,35 @@ export function extractFirstImgSrcFromHtml(html: string): string | undefined {
   const dataMatch = html.match(/<img[^>]*\bdata-src=["']([^"']+)["']/i);
   return dataMatch?.[1]?.trim();
 }
+
+const DEFAULT_BLOG_INLINE_IMG_ALT = "Blog article image";
+
+/** Escape characters that must not appear raw inside a double-quoted HTML attribute value. */
+function escapeAttrDoubleQuotes(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/**
+ * WordPress post HTML often omits `alt` or sets `alt=""`. Audits flag that; screen
+ * readers benefit from a non-empty fallback when the CMS did not provide one.
+ */
+export function ensureImgAltsInHtml(
+  html: string,
+  fallbackAlt: string = DEFAULT_BLOG_INLINE_IMG_ALT
+): string {
+  if (!html) return html;
+  const esc = escapeAttrDoubleQuotes(fallbackAlt);
+  return html.replace(/<img\b[^>]*>/gi, (tag) => {
+    const altMatch = tag.match(/\salt\s*=\s*(["'])([\s\S]*?)\1/i);
+    if (altMatch) {
+      const inner = altMatch[2] ?? "";
+      if (inner.trim() !== "") return tag;
+      return tag.replace(altMatch[0], ` alt="${esc}"`);
+    }
+    return tag.replace(/<img\b/i, `<img alt="${esc}"`);
+  });
+}

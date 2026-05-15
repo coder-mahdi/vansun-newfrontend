@@ -551,7 +551,11 @@ export function TattooBookingForm({
           {design ? (
             <div className="tattoo-booking-form__review-thumb">
               <p className="booking-wizard__sub">Design preview</p>
-              <img src={design} alt="" className="tattoo-booking-form__review-img" />
+              <img
+                src={design}
+                alt="Your uploaded tattoo design preview"
+                className="tattoo-booking-form__review-img"
+              />
             </div>
           ) : null}
 

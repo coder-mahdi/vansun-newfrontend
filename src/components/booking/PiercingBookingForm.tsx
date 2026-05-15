@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
@@ -86,10 +87,12 @@ function filterJewelryForPiercingSlot(
 function JewelryImageLightbox({
   urls,
   initialIndex,
+  jewelryCode,
   onClose,
 }: {
   urls: string[];
   initialIndex: number;
+  jewelryCode?: string;
   onClose: () => void;
 }) {
   const [index, setIndex] = useState(initialIndex);
@@ -121,6 +124,15 @@ function JewelryImageLightbox({
   }, [n, onClose]);
 
   if (n === 0 || !current) return null;
+
+  const alt =
+    n <= 1
+      ? jewelryCode
+        ? `Jewelry ${jewelryCode} - enlarged photo`
+        : "Jewelry - enlarged photo"
+      : jewelryCode
+        ? `Jewelry ${jewelryCode} - photo ${safeIndex + 1} of ${n}`
+        : `Jewelry photo ${safeIndex + 1} of ${n}`;
 
   return (
     <div
@@ -159,7 +171,7 @@ function JewelryImageLightbox({
         ) : null}
         <img
           src={current}
-          alt=""
+          alt={alt}
           className="booking-wizard__lightbox-img"
           decoding="async"
         />
@@ -245,6 +257,7 @@ export function PiercingBookingForm({
   const [jewelryLightbox, setJewelryLightbox] = useState<{
     urls: string[];
     index: number;
+    code?: string;
   } | null>(null);
   const wizardTopRef = useRef<HTMLDivElement | null>(null);
   const successMessageRef = useRef<HTMLDivElement | null>(null);
@@ -1104,20 +1117,24 @@ export function PiercingBookingForm({
                                   });
                                 }}
                               >
-                                <img
-                                  src={item.image_url}
-                                  alt={`Jewelry ${item.code}`}
-                                  className="booking-wizard__jewelry-image"
-                                  decoding="async"
-                                  onError={() => {
-                                    setBrokenJewelryCodes((prev) => {
-                                      if (prev.has(item.code)) return prev;
-                                      const next = new Set(prev);
-                                      next.add(item.code);
-                                      return next;
-                                    });
-                                  }}
-                                />
+                                <div className="booking-wizard__jewelry-image-wrap">
+                                  <Image
+                                    src={item.image_url}
+                                    alt={`Jewelry ${item.code}`}
+                                    fill
+                                    className="booking-wizard__jewelry-image"
+                                    sizes="(max-width: 859px) 45vw, 28vw"
+                                    decoding="async"
+                                    onError={() => {
+                                      setBrokenJewelryCodes((prev) => {
+                                        if (prev.has(item.code)) return prev;
+                                        const next = new Set(prev);
+                                        next.add(item.code);
+                                        return next;
+                                      });
+                                    }}
+                                  />
+                                </div>
                                 <div className="booking-wizard__jewelry-code">
                                   <span className="booking-wizard__jewelry-code-label">
                                     Jewelry code
@@ -1137,12 +1154,25 @@ export function PiercingBookingForm({
                                       aria-label={`Larger photo ${gi + 2} for ${item.code}`}
                                       onClick={() =>
                                         setJewelryLightbox({
-                                          urls: [item.image_url, ...item.gallery_urls],
+                                          urls: [
+                                            item.image_url,
+                                            ...item.gallery_urls,
+                                          ],
                                           index: gi + 1,
+                                          code: item.code,
                                         })
                                       }
                                     >
-                                      <img src={url} alt="" decoding="async" />
+                                      <span className="booking-wizard__jewelry-thumb-pad">
+                                        <Image
+                                          src={url}
+                                          alt={`Jewelry ${item.code}, extra photo ${gi + 2}`}
+                                          fill
+                                          className="booking-wizard__jewelry-thumb-img"
+                                          sizes="44px"
+                                          decoding="async"
+                                        />
+                                      </span>
                                     </button>
                                   ))}
                                 </div>
@@ -1163,6 +1193,7 @@ export function PiercingBookingForm({
               key={`${jewelryLightbox.urls.join("|")}-${jewelryLightbox.index}`}
               urls={jewelryLightbox.urls}
               initialIndex={jewelryLightbox.index}
+              jewelryCode={jewelryLightbox.code}
               onClose={() => setJewelryLightbox(null)}
             />
           ) : null}

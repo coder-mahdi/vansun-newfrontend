@@ -17,11 +17,10 @@ export function SiteBrandLink({ className, onClick }: SiteBrandLinkProps) {
       className={cn("site-header__brand", className)}
       href="/"
       onClick={onClick}
-      aria-label="Vansun Studio home"
     >
       <img
         src={brandLogoPath}
-        alt=""
+        alt="Vansun Studio"
         className="site-header__brand-img"
         decoding="async"
       />

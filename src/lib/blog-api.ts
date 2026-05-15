@@ -30,6 +30,7 @@ import { parseYoutubeId } from "@/lib/youtube";
 import {
   cmsPublicOrigin,
   extractFirstImgSrcFromHtml,
+  ensureImgAltsInHtml,
   rewriteWpHtmlAssetUrls,
 } from "@/lib/wp-html";
 import type { BlogCategory, BlogPost, BlogSummary, BlogVideo } from "@/types/blog";
@@ -365,7 +366,10 @@ function normalizeBlogPostPayload(row: unknown): BlogPost | null {
     textFromRenderedField(o.content) ||
     String(o.body ?? o.html ?? "").trim();
   if (!raw) return null;
-  let content = rewriteWpHtmlAssetUrls(raw);
+  let content = ensureImgAltsInHtml(
+    rewriteWpHtmlAssetUrls(raw),
+    `Image from article: ${base.title}`
+  );
   let coverImageUrl = base.coverImageUrl;
   if (!coverImageUrl) {
     const fromBody = extractFirstImgSrcFromHtml(raw);
@@ -456,7 +460,10 @@ async function fetchBlogPostFromWpRest(slug: string): Promise<BlogPost | null> {
   const title = stripHtml(post.title.rendered);
   const rawContent = String(post.content?.rendered ?? "").trim();
   if (!rawContent) return null;
-  const content = rewriteWpHtmlAssetUrls(rawContent);
+  const content = ensureImgAltsInHtml(
+    rewriteWpHtmlAssetUrls(rawContent),
+    `Image from article: ${title}`
+  );
 
   const excerptHtml = decodeHtmlEntities(stripHtml(
     String(post.excerpt?.rendered ?? "").trim() || rawContent.slice(0, 400)
