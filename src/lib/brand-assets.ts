@@ -6,6 +6,9 @@ const brandBase = "/brand";
 
 export const brandLogoPath = `${brandBase}/logo/logo.png`;
 
+/** Default Open Graph / social share image (`public/` path). */
+export const brandDefaultShareImagePath = "/images/Shop/salon.webp";
+
 export const brandFaviconDir = `${brandBase}/favicon`;
 
 export const brandFaviconIcoPath = `${brandFaviconDir}/favicon.ico`;
