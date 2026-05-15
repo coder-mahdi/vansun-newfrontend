@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import {
@@ -43,6 +44,18 @@ export default function RootLayout({
 
   return (
     <html lang="en" className="h-full antialiased">
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-CRMWDTR335"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CRMWDTR335');
+  `}
+      </Script>
       <body className="min-h-full min-h-dvh flex flex-col font-sans">
         <script
           type="application/ld+json"
