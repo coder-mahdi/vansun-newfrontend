@@ -40,87 +40,91 @@ export function FeaturedBlogsSection({
             !apiVideo && "featured-blogs-layout--single"
           )}
         >
-          <div className="featured-blogs-column featured-blogs-column--articles">
-            <article className="featured-blogs-featured">
-              <Link
-                href={blogPostHref(latest.slug)}
-                className="featured-blogs-featured__link"
-              >
-                {latest.coverImageUrl ? (
-                  <div className="featured-blogs-featured__media">
-                    <Image
-                      src={latest.coverImageUrl}
-                      alt={latest.title}
-                      fill
-                      className="featured-blogs-featured__img"
-                      sizes="(max-width: 1022px) 100vw, 50vw"
-                      unoptimized
+          <div className="featured-blogs-layout__main">
+            <div className="featured-blogs-column featured-blogs-column--articles">
+              <article className="featured-blogs-featured">
+                <Link
+                  href={blogPostHref(latest.slug)}
+                  className="featured-blogs-featured__link"
+                >
+                  {latest.coverImageUrl ? (
+                    <div className="featured-blogs-featured__media">
+                      <Image
+                        src={latest.coverImageUrl}
+                        alt={latest.title}
+                        fill
+                        className="featured-blogs-featured__img"
+                        sizes="(max-width: 1022px) 100vw, 50vw"
+                        unoptimized
+                      />
+                    </div>
+                  ) : null}
+                  <div className="featured-blogs-featured__body">
+                    <h3 className="featured-blogs-featured__heading">
+                      {latest.title}
+                    </h3>
+                    <p className="featured-blogs-featured__excerpt">
+                      {latest.excerpt}
+                    </p>
+                    <span className="featured-blogs-featured__cta">
+                      Read article
+                    </span>
+                  </div>
+                </Link>
+              </article>
+            </div>
+
+            {apiVideo ? (
+              <div className="featured-blogs-column featured-blogs-column--video">
+                <div className="featured-blogs-video">
+                  <h3
+                    className="featured-blogs-video__label"
+                    id="featured-video-label"
+                  >
+                    Latest video
+                  </h3>
+                  <div
+                    className="featured-blogs-video__frame"
+                    aria-labelledby="featured-video-label"
+                  >
+                    <iframe
+                      title={apiVideo.title}
+                      src={`https://www.youtube-nocookie.com/embed/${apiVideo.youtubeId}`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      loading="lazy"
+                      className="featured-blogs-video__embed"
                     />
                   </div>
-                ) : null}
-                <div className="featured-blogs-featured__body">
-                  <h3 className="featured-blogs-featured__heading">
-                    {latest.title}
-                  </h3>
-                  <p className="featured-blogs-featured__excerpt">
-                    {latest.excerpt}
+                  <p className="featured-blogs-video__caption">
+                    {apiVideo.title}
                   </p>
-                  <span className="featured-blogs-featured__cta">
-                    Read article
-                  </span>
                 </div>
-              </Link>
-            </article>
-
-            <nav
-              className="featured-blogs-titles"
-              aria-label="Recent blog posts"
-            >
-              <h3 className="featured-blogs-titles__label">Recent posts</h3>
-              {recentTitles.length === 0 ? (
-                <ul className="featured-blogs-titles__list">
-                  <li>
-                    <Link href="/blogs">Blog</Link>
-                  </li>
-                </ul>
-              ) : (
-                <ul className="featured-blogs-titles__list">
-                  {recentTitles.map((post) => (
-                    <li key={post.slug}>
-                      <Link href={blogPostHref(post.slug)}>{post.title}</Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </nav>
+              </div>
+            ) : null}
           </div>
 
-          {apiVideo ? (
-            <div className="featured-blogs-column featured-blogs-column--video">
-              <div className="featured-blogs-video">
-                <h3
-                  className="featured-blogs-video__label"
-                  id="featured-video-label"
-                >
-                  Latest video
-                </h3>
-                <div
-                  className="featured-blogs-video__frame"
-                  aria-labelledby="featured-video-label"
-                >
-                  <iframe
-                    title={apiVideo.title}
-                    src={`https://www.youtube-nocookie.com/embed/${apiVideo.youtubeId}`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    loading="lazy"
-                    className="featured-blogs-video__embed"
-                  />
-                </div>
-                <p className="featured-blogs-video__caption">{apiVideo.title}</p>
-              </div>
-            </div>
-          ) : null}
+          <nav
+            className="featured-blogs-titles"
+            aria-label="Recent blog posts"
+          >
+            <h3 className="featured-blogs-titles__label">Recent posts</h3>
+            {recentTitles.length === 0 ? (
+              <ul className="featured-blogs-titles__list">
+                <li>
+                  <Link href="/blogs">Blog</Link>
+                </li>
+              </ul>
+            ) : (
+              <ul className="featured-blogs-titles__list">
+                {recentTitles.map((post) => (
+                  <li key={post.slug}>
+                    <Link href={blogPostHref(post.slug)}>{post.title}</Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </nav>
         </div>
       )}
     </section>
