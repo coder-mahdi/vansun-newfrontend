@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 
 import type { HomeHeroPayload } from "@/lib/home-cms";
 import type { WpMedia } from "@/lib/cms-wordpress";
@@ -97,10 +98,13 @@ export function HeroSlider({
                   key={`${image.source_url}-${index}`}
                   className="slider-item"
                 >
-                  <img
+                  <Image
                     src={image.source_url}
                     alt={altText}
-                    loading={index === 0 ? "eager" : "lazy"}
+                    fill
+                    className="hero-slide-img"
+                    sizes="(max-width: 480px) 120px, (max-width: 767px) 160px, (max-width: 1023px) 180px, 200px"
+                    priority={index === 0}
                   />
                 </div>
               );

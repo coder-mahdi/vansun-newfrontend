@@ -151,15 +151,6 @@
     }
   }
 
-  &__keyword {
-    margin: 0;
-    font-size: 12px;
-    font-weight: $font-weight-bold;
-    letter-spacing: $letter-spacing-wide;
-    text-transform: $text-transform-uppercase;
-    color: rgba(61, 44, 0, 0.65);
-  }
-
   &__heading {
     font-size: clamp(1.25rem, 2.5vw, $font-size-h2);
     margin: 0;

@@ -5,11 +5,14 @@ import type { BlogCategory } from "@/types/blog";
 
 type BlogPostInternalLinksProps = {
   category: BlogCategory;
+  /** CMS / WP tags line; shown once after visit links, subtle. */
+  articleKeyword?: string;
   className?: string;
 };
 
 export function BlogPostInternalLinks({
   category,
+  articleKeyword,
   className,
 }: BlogPostInternalLinksProps) {
   const isPiercing = category === "piercing";
@@ -40,6 +43,16 @@ export function BlogPostInternalLinks({
           <Link href={bookHref}>Book {topic}</Link>
         </li>
       </ul>
+      {articleKeyword?.trim() ? (
+        <p className="blog-post-internal-links__keyword-note">
+          <span className="blog-post-internal-links__keyword-label">
+            Keyword
+          </span>
+          <span className="blog-post-internal-links__keyword-value">
+            {articleKeyword.trim()}
+          </span>
+        </p>
+      ) : null}
     </section>
   );
 }

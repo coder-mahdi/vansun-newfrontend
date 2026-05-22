@@ -2,6 +2,8 @@
  * Blog posts and videos from Vansun WordPress REST (`vansun/v1`).
  *
  * Blogs: GET `/content/blogs`, core `post` type, `topic` (tattoo|piercing), `tags` / `tag_slugs` for SEO.
+ * Response may be a raw array or an object with `posts`, `blogs`, `data`, `results`, or `items`.
+ * Rows may use flat fields or WordPress-style `title.rendered` / `content.rendered` / `post_name`.
  * Videos: GET `/content/videos`, returns `[]` when no API URL or no rows (no mock list).
  *
  * Optional: if `NEXT_PUBLIC_CMS_API_URL` is set, single post pages can resolve by real WP `slug`
@@ -15,6 +17,9 @@
  * - `NEXT_PUBLIC_CONTENT_API_URL`
  * - `NEXT_PUBLIC_CONSENT_API_URL`
  * - `NEXT_PUBLIC_API_URL`
+ *
+ * Blog list/detail requests use `_vs` on the query string and `no-cache` request headers so
+ * nginx/CDN in front of the CMS cannot keep serving stale JSON (see `bypassUpstreamCache`).
  */
 import {
   blogPostsBySlug,
@@ -25,6 +30,7 @@ import { parseYoutubeId } from "@/lib/youtube";
 import {
   cmsPublicOrigin,
   extractFirstImgSrcFromHtml,
+  ensureImgAltsInHtml,
   rewriteWpHtmlAssetUrls,
 } from "@/lib/wp-html";
 import type { BlogCategory, BlogPost, BlogSummary, BlogVideo } from "@/types/blog";
@@ -160,8 +166,48 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, "");
 }
 
+function decodeHtmlEntities(s: string): string {
+  const named: Record<string, string> = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " ",
+  };
+  return s
+    .replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (full, entity: string) => {
+      const key = entity.toLowerCase();
+      if (key in named) return named[key]!;
+      if (key.startsWith("#x")) {
+        const cp = Number.parseInt(key.slice(2), 16);
+        if (Number.isFinite(cp) && cp > 0) return String.fromCodePoint(cp);
+        return full;
+      }
+      if (key.startsWith("#")) {
+        const cp = Number.parseInt(key.slice(1), 10);
+        if (Number.isFinite(cp) && cp > 0) return String.fromCodePoint(cp);
+        return full;
+      }
+      return full;
+    })
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function stripHtml(s: string): string {
-  return s.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return decodeHtmlEntities(s.replace(/<[^>]*>/g, " "));
+}
+
+/** CMS may send a plain string or WordPress `{ rendered: "…" }`. */
+function textFromRenderedField(v: unknown): string {
+  if (v == null) return "";
+  if (typeof v === "string") return v.trim();
+  if (typeof v === "object" && "rendered" in (v as object)) {
+    const r = (v as { rendered?: unknown }).rendered;
+    return typeof r === "string" ? r.trim() : "";
+  }
+  return "";
 }
 
 /** CMS may send a string URL or a small object (`url`, `source_url`, …). */
@@ -192,11 +238,26 @@ function asArray(payload: unknown): unknown[] {
   if (payload && typeof payload === "object") {
     const o = payload as Record<string, unknown>;
     if (Array.isArray(o.posts)) return o.posts;
+    if (Array.isArray(o.blogs)) return o.blogs;
     if (Array.isArray(o.data)) return o.data;
+    if (Array.isArray(o.results)) return o.results;
+    if (Array.isArray(o.rows)) return o.rows;
     if (Array.isArray(o.videos)) return o.videos;
     if (Array.isArray(o.items)) return o.items;
   }
   return [];
+}
+
+/** Vansun `/content/blogs` often returns `{ items: Post[] }`. */
+function blogRowsFromPayload(payload: unknown): unknown[] {
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "items" in payload
+  ) {
+    return asArray((payload as { items?: unknown }).items);
+  }
+  return asArray(payload);
 }
 
 function normalizeCategory(raw: unknown): BlogCategory {
@@ -223,8 +284,12 @@ function parseKeywordList(value: unknown): string[] {
 function normalizeBlogSummaryRow(row: unknown): BlogSummary | null {
   if (!row || typeof row !== "object") return null;
   const o = row as Record<string, unknown>;
-  const title = String(o.title ?? "").trim();
-  const slugFromApi = String(o.slug ?? "").trim();
+  const rawTitle =
+    textFromRenderedField(o.title) ||
+    String(o.post_title ?? o.name ?? "").trim();
+  const title = decodeHtmlEntities(rawTitle);
+  const slugFromApi =
+    String(o.slug ?? "").trim() || String(o.post_name ?? "").trim();
   const idRaw = String(o.id ?? "").trim();
   const slug =
     slugFromApi ||
@@ -232,12 +297,14 @@ function normalizeBlogSummaryRow(row: unknown): BlogSummary | null {
     (idRaw ? `post-${idRaw}` : "");
   if (!slug || !title) return null;
 
-  const excerptSource = String(
-    o.excerpt ?? o.summary ?? o.content ?? o.body ?? o.html ?? ""
-  ).trim();
-  const excerpt = stripHtml(excerptSource).slice(0, 220) || title;
+  const excerptSource =
+    textFromRenderedField(o.excerpt) ||
+    String(o.summary ?? "").trim() ||
+    textFromRenderedField(o.content) ||
+    String(o.body ?? o.html ?? "").trim();
+  const excerpt = decodeHtmlEntities(stripHtml(excerptSource)).slice(0, 220) || title;
   const publishedAt = String(
-    o.publishedAt ?? o.published_at ?? o.date ?? ""
+    o.publishedAt ?? o.published_at ?? o.date_gmt ?? o.date ?? ""
   ).trim();
 
   const tagsFromTagsField = parseKeywordList(o.tags);
@@ -270,7 +337,8 @@ function normalizeBlogSummaryRow(row: unknown): BlogSummary | null {
       : undefined;
 
   if (!coverImageUrl) {
-    const html = String(o.content ?? "").trim();
+    const html =
+      textFromRenderedField(o.content) || String(o.body ?? o.html ?? "").trim();
     if (html) {
       const fromBody = extractFirstImgSrcFromHtml(html);
       if (fromBody) coverImageUrl = resolveCmsMediaUrl(fromBody);
@@ -294,9 +362,14 @@ function normalizeBlogPostPayload(row: unknown): BlogPost | null {
   if (!base) return null;
   if (!row || typeof row !== "object") return null;
   const o = row as Record<string, unknown>;
-  const raw = String(o.content ?? o.body ?? o.html ?? "").trim();
+  const raw =
+    textFromRenderedField(o.content) ||
+    String(o.body ?? o.html ?? "").trim();
   if (!raw) return null;
-  let content = rewriteWpHtmlAssetUrls(raw);
+  let content = ensureImgAltsInHtml(
+    rewriteWpHtmlAssetUrls(raw),
+    `Image from article: ${base.title}`
+  );
   let coverImageUrl = base.coverImageUrl;
   if (!coverImageUrl) {
     const fromBody = extractFirstImgSrcFromHtml(raw);
@@ -374,8 +447,11 @@ async function fetchBlogPostFromWpRest(slug: string): Promise<BlogPost | null> {
   const base = wpJsonBase();
   if (!base) return null;
 
-  const url = `${base}/wp/v2/posts?slug=${encodeURIComponent(slug)}&_embed=1`;
-  const res = await fetch(url, { next: { revalidate: 300 } });
+  const url = `${base}/wp/v2/posts?slug=${encodeURIComponent(slug)}&_embed=1&_vs=${Date.now()}`;
+  const res = await fetch(url, {
+    cache: "no-store",
+    headers: { "Cache-Control": "no-cache", Pragma: "no-cache" },
+  });
   if (!res.ok) return null;
   const posts = (await res.json()) as WpRestPost[];
   const post = posts[0];
@@ -384,11 +460,14 @@ async function fetchBlogPostFromWpRest(slug: string): Promise<BlogPost | null> {
   const title = stripHtml(post.title.rendered);
   const rawContent = String(post.content?.rendered ?? "").trim();
   if (!rawContent) return null;
-  const content = rewriteWpHtmlAssetUrls(rawContent);
-
-  const excerptHtml = stripHtml(
-    String(post.excerpt?.rendered ?? "").trim() || rawContent.slice(0, 400)
+  const content = ensureImgAltsInHtml(
+    rewriteWpHtmlAssetUrls(rawContent),
+    `Image from article: ${title}`
   );
+
+  const excerptHtml = decodeHtmlEntities(stripHtml(
+    String(post.excerpt?.rendered ?? "").trim() || rawContent.slice(0, 400)
+  ));
   const publishedAt = String(post.date_gmt ?? post.date ?? "").trim() || "1970-01-01";
 
   const terms = post._embedded?.["wp:term"]?.flat() ?? [];
@@ -399,7 +478,7 @@ async function fetchBlogPostFromWpRest(slug: string): Promise<BlogPost | null> {
 
   const tagNames = terms
     .filter((t) => t.taxonomy === "post_tag")
-    .map((t) => String(t.name ?? "").trim())
+    .map((t) => decodeHtmlEntities(String(t.name ?? "").trim()))
     .filter(Boolean);
   const keyword =
     tagNames.length > 0 ? tagNames.join(", ") : "blog";
@@ -479,7 +558,7 @@ function rowMatchesSlug(row: unknown, slug: string): boolean {
   if (summary?.slug === slug) return true;
   if (!row || typeof row !== "object") return false;
   const o = row as Record<string, unknown>;
-  const apiSlug = String(o.slug ?? "").trim();
+  const apiSlug = String(o.slug ?? o.post_name ?? "").trim();
   if (apiSlug && apiSlug === slug) return true;
   const id = String(o.id ?? "").trim();
   if (id && slug === `post-${id}`) return true;
@@ -496,6 +575,7 @@ export async function fetchBlogSummaries(
     const params: Record<string, string | number | undefined> = {
       per_page: 50,
     };
+
     if (topic === "tattoo" || topic === "piercing") {
       params.topic = topic;
     }
@@ -508,8 +588,10 @@ export async function fetchBlogSummaries(
       rows.map(async (row) => {
         const s = normalizeBlogSummaryRow(row);
         if (!s) return null;
+
         if (s.coverImageUrl) return s;
-        if (typeof row === "object") {
+
+        if (typeof row === "object" && row !== null) {
           const id = Number((row as Record<string, unknown>).id);
           if (Number.isFinite(id)) {
             const wpSrc = await fetchWpCoverFromRestByPostId(id);
@@ -517,16 +599,35 @@ export async function fetchBlogSummaries(
             if (resolved) return { ...s, coverImageUrl: resolved };
           }
         }
+
         return s;
       })
     );
+
     const out = enriched.filter(Boolean) as BlogSummary[];
+
     if (out.length > 0) {
       return out.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
     }
-  } catch {
-    /* use mock */
+
+    if (process.env.NODE_ENV === "development") {
+      const keys =
+        payload && typeof payload === "object"
+          ? Object.keys(payload as object).join(", ")
+          : typeof payload;
+      console.warn(
+        "[fetchBlogSummaries] No rows after normalize. Payload keys:",
+        keys,
+        "rowCount raw:",
+        rows.length
+      );
+    }
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[fetchBlogSummaries] CMS error, using mock:", err);
+    }
   }
+
   return [...mockBlogSummaries];
 }
 
@@ -542,7 +643,11 @@ export async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
       { per_page: 100 },
       { cache: "no-store", bypassUpstreamCache: true }
     );
+<<<<<<< HEAD
     const rows = asArray(payload);
+=======
+    const rows = blogRowsFromPayload(payload);
+>>>>>>> main
     const match = rows.find((row) => rowMatchesSlug(row, slug));
     let post = normalizeBlogPostPayload(match);
     if (post && !post.coverImageUrl && match && typeof match === "object") {
@@ -554,8 +659,10 @@ export async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
       }
     }
     if (post) return post;
-  } catch {
-    /* fallback */
+  } catch (err) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`[fetchBlogPost] CMS list fetch failed for slug=${slug}:`, err);
+    }
   }
 
   const fromWp = await fetchBlogPostFromWpRest(slug);

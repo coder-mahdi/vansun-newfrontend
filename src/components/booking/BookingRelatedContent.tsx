@@ -101,7 +101,7 @@ export async function BookingRelatedContent({
                   <div className="booking-related-video__media">
                     <Image
                       src={youtubeThumbUrl(v.youtubeId)}
-                      alt=""
+                      alt={`Video thumbnail: ${v.title}`}
                       width={480}
                       height={360}
                       className="booking-related-video__img"

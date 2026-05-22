@@ -97,7 +97,7 @@ export function PiercerSection({
                     <div className="piercer-section__avatar-wrap">
                       <Image
                         src={testimonialImageUrl(t)}
-                        alt=""
+                        alt={`Photo for testimonial from ${t.name}`}
                         width={72}
                         height={72}
                         className="piercer-section__avatar"

@@ -9,11 +9,19 @@ export const metadata: Metadata = {
     "Articles from Vansun: tattoo, piercing, aftercare, and studio updates.",
 };
 
+/** Always hit CMS at request time (env + `/content/blogs` can change; avoids stale static shell). */
+export const dynamic = "force-dynamic";
+
 export default async function BlogsPage() {
-  const [posts, videos] = await Promise.all([
+  // No topic filter — full list from CMS (see fetchBlogSummaries in blog-api).
+  const [blogs, videos] = await Promise.all([
     fetchBlogSummaries(),
     fetchBlogVideos(),
   ]);
 
-  return <BlogsPageClient posts={posts} videos={videos} />;
+  console.log("[blogs page] length:", blogs.length);
+  console.log("[blogs page] blogs:", blogs);
+
+  // Render path: BlogsPageClient → filteredPosts → BlogGrid → posts.map → <BlogCard />
+  return <BlogsPageClient posts={blogs} videos={videos} />;
 }

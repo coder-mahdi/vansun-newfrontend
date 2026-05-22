@@ -1,3 +1,5 @@
+import type { JewelryTier } from "@/lib/jewelry-store-api";
+
 /** Step 1: contact + slot (multi-step piercing flow) */
 export type PiercingBookingStep1Values = {
   fullName: string;
@@ -9,6 +11,15 @@ export type PiercingBookingStep1Values = {
   recaptchaToken: string | null;
 };
 
+/** One studio-jewelry pick per piercing service unit (same order as `piercingIds`). */
+export type PiercingJewelrySlotLine = {
+  piercingId: string;
+  tier: JewelryTier;
+  code: string;
+  imageUrl: string | null;
+  feeCad: number;
+};
+
 export type PiercingBookingWizardPayload = PiercingBookingStep1Values & {
   /** Count per placement id (canonical). */
   piercingQuantities: Record<string, number>;
@@ -17,6 +28,8 @@ export type PiercingBookingWizardPayload = PiercingBookingStep1Values & {
   jewelryChoice: "change-jewelry" | "bring-own";
   jewelryTier: "basic" | "standard" | "premium" | "pro-premium" | null;
   jewelryCode: string | null;
+  /** When studio jewelry: one line per piercing slot; null if bring-your-own. */
+  jewelrySlots: PiercingJewelrySlotLine[] | null;
   /** Resolved from jewelry store API when studio jewelry is chosen. */
   jewelryImageUrl: string | null;
   aftercareKit: boolean;

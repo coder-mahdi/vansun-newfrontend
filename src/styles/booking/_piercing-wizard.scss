@@ -99,6 +99,12 @@
   }
 }
 
+.booking-wizard__jewelry-slot--follow {
+  margin-top: 2rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid rgba(250, 255, 238, 0.15);
+}
+
 .booking-wizard__placement-chips {
   display: flex;
   flex-wrap: wrap;
@@ -265,11 +271,16 @@
   }
 }
 
-.booking-wizard__jewelry-image {
+.booking-wizard__jewelry-image-wrap {
+  position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  object-fit: cover;
   border-radius: 8px;
+  overflow: hidden;
+}
+
+.booking-wizard__jewelry-image {
+  object-fit: cover;
 }
 
 .booking-wizard__jewelry-code {
@@ -315,11 +326,15 @@
   height: 2.75rem;
   flex: 0 0 auto;
 
-  img {
+  .booking-wizard__jewelry-thumb-pad {
+    position: relative;
+    display: block;
     width: 100%;
     height: 100%;
+  }
+
+  .booking-wizard__jewelry-thumb-img {
     object-fit: cover;
-    display: block;
   }
 
   &:hover {

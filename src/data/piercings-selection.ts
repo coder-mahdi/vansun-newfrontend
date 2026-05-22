@@ -238,12 +238,22 @@ export function defsForImage(key: PiercingImageKey): PiercingSelectionDef[] {
   return piercingSelectionDefs.filter((d) => d.image === key);
 }
 
-/** Expand quantities into a flat id list (API / jewelry usage). */
+/**
+ * Expand quantities into a flat id list (API / jewelry step).
+ * Uses catalog order so multi-piercing slots stay stable regardless of picker order.
+ */
 export function flattenPiercingQuantities(
   quantities: Record<string, number>
 ): string[] {
+  const seen = new Set<string>();
   const out: string[] = [];
+  for (const def of piercingSelectionDefs) {
+    seen.add(def.id);
+    const qty = Math.max(0, Math.floor(Number(quantities[def.id] ?? 0)));
+    for (let i = 0; i < qty; i++) out.push(def.id);
+  }
   for (const [id, n] of Object.entries(quantities)) {
+    if (seen.has(id)) continue;
     const qty = Math.max(0, Math.floor(Number(n)));
     for (let i = 0; i < qty; i++) out.push(id);
   }

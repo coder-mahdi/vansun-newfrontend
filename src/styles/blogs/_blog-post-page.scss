@@ -5,3 +5,10 @@
   color: $color-primary;
   min-height: 50vh;
 }
+
+/** Visual break between Related strip and FAQ block below. */
+.blog-post-faq-wrap {
+  margin-top: 0;
+  border-top: 1px solid rgba($color-primary, 0.14);
+  padding-top: 1.25rem;
+}

@@ -1,4 +1,9 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
+
+/** When a lockfile exists above this repo, Next may infer the wrong root and skip `.env.local` here. */
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 /** Allow `next/image` for API/CMS origins from env (gallery, blog covers, etc.). */
 function remotePatternsFromEnv(): NonNullable<
@@ -39,6 +44,9 @@ function remotePatternsFromEnv(): NonNullable<
 }
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: projectRoot,
+  },
   async redirects() {
     return [
       {

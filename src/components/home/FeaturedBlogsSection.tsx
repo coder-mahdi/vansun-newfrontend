@@ -50,7 +50,7 @@ export function FeaturedBlogsSection({
                   <div className="featured-blogs-featured__media">
                     <Image
                       src={latest.coverImageUrl}
-                      alt=""
+                      alt={latest.title}
                       fill
                       className="featured-blogs-featured__img"
                       sizes="(max-width: 1022px) 100vw, 50vw"
@@ -59,7 +59,6 @@ export function FeaturedBlogsSection({
                   </div>
                 ) : null}
                 <div className="featured-blogs-featured__body">
-                  <p className="featured-blogs-featured__keyword">{latest.keyword}</p>
                   <h3 className="featured-blogs-featured__heading">
                     {latest.title}
                   </h3>
