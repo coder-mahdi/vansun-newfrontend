@@ -643,11 +643,7 @@ export async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
       { per_page: 100 },
       { cache: "no-store", bypassUpstreamCache: true }
     );
-<<<<<<< HEAD
     const rows = asArray(payload);
-=======
-    const rows = blogRowsFromPayload(payload);
->>>>>>> main
     const match = rows.find((row) => rowMatchesSlug(row, slug));
     let post = normalizeBlogPostPayload(match);
     if (post && !post.coverImageUrl && match && typeof match === "object") {
