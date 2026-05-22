@@ -125,12 +125,30 @@ function buildQueryString(
 
 async function contentGet<T>(
   path: string,
-  params?: Record<string, string | number | undefined>
+  params?: Record<string, string | number | undefined>,
+  options?: { cache?: RequestCache; bypassUpstreamCache?: boolean }
 ): Promise<T> {
   const base = apiBase();
-  const res = await fetch(`${trimSlash(base)}${path}${buildQueryString(params)}`, {
-    next: { revalidate: 300 },
-  });
+  const bust = options?.bypassUpstreamCache === true;
+  const mergedParams = bust
+    ? { ...(params ?? {}), _vs: Date.now() }
+    : params;
+  const url = `${trimSlash(base)}${path}${buildQueryString(mergedParams)}`;
+  const noStore = options?.cache === "no-store" || bust;
+  const init: RequestInit = noStore
+    ? {
+        cache: "no-store",
+        ...(bust
+          ? {
+              headers: {
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+              },
+            }
+          : {}),
+      }
+    : { next: { revalidate: 300 } };
+  const res = await fetch(url, init);
   if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
   return res.json() as Promise<T>;
 }
@@ -437,9 +455,9 @@ function normalizeVideoRow(row: unknown): BlogVideo | null {
   const id =
     String(o.id ?? o.uuid ?? "").trim() ||
     `${ytId}-${title.slice(0, 48).replace(/\s+/g, "-")}`;
-  const categoryRaw = o.category ?? o.type;
+  const categoryRaw = o.category ?? o.type ?? o.topic;
   const category =
-    categoryRaw === undefined || categoryRaw === null
+    categoryRaw === undefined || categoryRaw === null || String(categoryRaw).trim() === ""
       ? categoryFromKeyword(keyword)
       : normalizeCategory(categoryRaw);
   const publishedAt = String(
@@ -481,7 +499,10 @@ export async function fetchBlogSummaries(
     if (topic === "tattoo" || topic === "piercing") {
       params.topic = topic;
     }
-    const payload = await contentGet<unknown>("/content/blogs", params);
+    const payload = await contentGet<unknown>("/content/blogs", params, {
+      cache: "no-store",
+      bypassUpstreamCache: true,
+    });
     const rows = asArray(payload);
     const enriched = await Promise.all(
       rows.map(async (row) => {
@@ -516,9 +537,11 @@ export async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
   }
 
   try {
-    const payload = await contentGet<unknown>("/content/blogs", {
-      per_page: 100,
-    });
+    const payload = await contentGet<unknown>(
+      "/content/blogs",
+      { per_page: 100 },
+      { cache: "no-store", bypassUpstreamCache: true }
+    );
     const rows = asArray(payload);
     const match = rows.find((row) => rowMatchesSlug(row, slug));
     let post = normalizeBlogPostPayload(match);
@@ -546,9 +569,11 @@ export async function fetchBlogVideos(): Promise<BlogVideo[]> {
   if (!base) return [];
 
   try {
-    const payload = await contentGet<unknown>("/content/videos", {
-      per_page: 50,
-    });
+    const payload = await contentGet<unknown>(
+      "/content/videos",
+      { per_page: 50 },
+      { cache: "no-store", bypassUpstreamCache: true }
+    );
     const rows = asArray(payload);
     const out = rows
       .map(normalizeVideoRow)
