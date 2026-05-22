@@ -30,14 +30,13 @@
 .featured-blogs-layout {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 2rem;
   max-width: 100%;
   margin-inline: auto;
   align-items: stretch;
 
   @media (min-width: 1023px) {
-    flex-direction: row;
-    gap: 0;
+    gap: 2.25rem;
     max-width: none;
     margin-inline: 0;
   }
@@ -47,39 +46,36 @@
       max-width: 56rem;
       margin-inline: auto;
     }
+  }
 
-    .featured-blogs-column--articles {
-      @media (min-width: 1023px) {
-        flex: 1 1 auto;
-        max-width: 100%;
-        width: 100%;
-        padding-right: 0;
-      }
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
 
-      @media (min-width: 1200px) {
-        padding-right: 0;
-      }
+    @media (min-width: 1023px) {
+      flex-direction: row;
+      align-items: stretch;
+      gap: 0;
     }
   }
 }
 
 .featured-blogs-column {
+  min-width: 0;
+
   @media (min-width: 1023px) {
-    flex: 0 0 50%;
+    flex: 1 1 50%;
     max-width: 50%;
-    width: 50%;
   }
 
   &--articles {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
     padding: 0;
 
     @media (min-width: 1023px) {
       padding: 0 2rem 0 0;
-      gap: 2.25rem;
-      justify-content: flex-start;
     }
 
     @media (min-width: 1200px) {
@@ -90,7 +86,6 @@
   &--video {
     display: flex;
     flex-direction: column;
-    justify-content: center;
 
     @media (min-width: 1023px) {
       padding: 0 0 0 2rem;
@@ -99,6 +94,63 @@
 
     @media (min-width: 1200px) {
       padding-left: 2.5rem;
+    }
+  }
+}
+
+.featured-blogs-layout:not(.featured-blogs-layout--single) {
+  .featured-blogs-featured {
+    @media (min-width: 1023px) {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+  }
+
+  .featured-blogs-featured__link {
+    @media (min-width: 1023px) {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+  }
+
+  .featured-blogs-featured__media {
+    @media (min-width: 1023px) {
+      flex: 1 1 auto;
+      aspect-ratio: 16 / 9;
+      min-height: 10rem;
+    }
+  }
+
+  .featured-blogs-featured__heading {
+    @media (min-width: 1023px) {
+      font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+    }
+  }
+
+  .featured-blogs-featured__excerpt {
+    @media (min-width: 1023px) {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
+  }
+
+  .featured-blogs-video {
+    @media (min-width: 1023px) {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+  }
+
+  .featured-blogs-video__frame {
+    @media (min-width: 1023px) {
+      flex: 1 1 auto;
+      min-height: 10rem;
     }
   }
 }
@@ -141,13 +193,13 @@
 
   &__body {
     padding: 1.25rem 1.35rem 1.5rem;
-    flex: 1;
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
 
     @media (min-width: 1023px) {
-      padding: 1.5rem 1.5rem 1.75rem;
+      padding: 1.25rem 1.5rem 1.5rem;
     }
   }
 
@@ -163,7 +215,6 @@
     font-size: $font-size-base;
     line-height: $line-height-loose;
     color: $color-primary;
-    flex: 1;
   }
 
   &__cta {
@@ -178,7 +229,9 @@
   padding: 0 0.25rem;
 
   @media (min-width: 1023px) {
-    padding: 0;
+    padding: 2rem 0 0;
+    margin-top: 0.25rem;
+    border-top: 1px solid rgba(61, 44, 0, 0.12);
   }
 
   &__label {
@@ -197,6 +250,16 @@
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
+
+    @media (min-width: 1023px) {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.85rem 2rem;
+    }
+
+    @media (min-width: 1200px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
   }
 
   &__list a {
@@ -216,6 +279,8 @@
 
 .featured-blogs-video {
   width: 100%;
+  display: flex;
+  flex-direction: column;
 
   &__label {
     font-size: 1rem;
@@ -224,6 +289,7 @@
     letter-spacing: $letter-spacing-wide;
     text-transform: $text-transform-uppercase;
     color: $color-primary;
+    flex: 0 0 auto;
   }
 
   &__frame {
@@ -232,6 +298,7 @@
     aspect-ratio: 16 / 9;
     background-color: rgba(61, 44, 0, 0.12);
     overflow: hidden;
+    flex: 0 0 auto;
   }
 
   &__embed {
@@ -267,5 +334,13 @@
     font-size: $font-size-base;
     line-height: $line-height-base;
     color: $color-primary;
+    flex: 0 0 auto;
+
+    @media (min-width: 1023px) {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
   }
 }
