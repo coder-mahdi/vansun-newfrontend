@@ -24,8 +24,8 @@ function carouselSlots(active: PiercingImageKey): {
 }[] {
   const ix = piercingImageOrder.indexOf(active);
   const n = piercingImageOrder.length;
-  const left = piercingImageOrder[(ix - 1 + n) % n]!;
-  const right = piercingImageOrder[(ix + 1) % n]!;
+  const left = piercingImageOrder[(ix - 1 + n) % n];
+  const right = piercingImageOrder[(ix + 1) % n];
   return [
     { key: left, slot: "left" },
     { key: active, slot: "center" },
@@ -60,7 +60,7 @@ function PriceRow({ def }: { def: PiercingSelectionDef }) {
 
 export function PiercingPriceListExplorer({ className }: { className?: string }) {
   const [activeCategory, setActiveCategory] = useState<PiercingImageKey>(
-    piercingImageOrder[0] ?? "face-body"
+    piercingImageOrder[0]!
   );
   const activeDefs = defsForImage(activeCategory);
 
