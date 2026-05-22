@@ -534,9 +534,9 @@ function normalizeVideoRow(row: unknown): BlogVideo | null {
   const id =
     String(o.id ?? o.uuid ?? "").trim() ||
     `${ytId}-${title.slice(0, 48).replace(/\s+/g, "-")}`;
-  const categoryRaw = o.category ?? o.type;
+  const categoryRaw = o.category ?? o.type ?? o.topic;
   const category =
-    categoryRaw === undefined || categoryRaw === null
+    categoryRaw === undefined || categoryRaw === null || String(categoryRaw).trim() === ""
       ? categoryFromKeyword(keyword)
       : normalizeCategory(categoryRaw);
   const publishedAt = String(
@@ -579,15 +579,11 @@ export async function fetchBlogSummaries(
     if (topic === "tattoo" || topic === "piercing") {
       params.topic = topic;
     }
-
-    const payload = await contentGet<unknown>(
-      "/content/blogs",
-      params,
-      { cache: "no-store", bypassUpstreamCache: true }
-    );
-
-    const rows = blogRowsFromPayload(payload);
-
+    const payload = await contentGet<unknown>("/content/blogs", params, {
+      cache: "no-store",
+      bypassUpstreamCache: true,
+    });
+    const rows = asArray(payload);
     const enriched = await Promise.all(
       rows.map(async (row) => {
         const s = normalizeBlogSummaryRow(row);
@@ -647,7 +643,11 @@ export async function fetchBlogPost(slug: string): Promise<BlogPost | null> {
       { per_page: 100 },
       { cache: "no-store", bypassUpstreamCache: true }
     );
+<<<<<<< HEAD
+    const rows = asArray(payload);
+=======
     const rows = blogRowsFromPayload(payload);
+>>>>>>> main
     const match = rows.find((row) => rowMatchesSlug(row, slug));
     let post = normalizeBlogPostPayload(match);
     if (post && !post.coverImageUrl && match && typeof match === "object") {
@@ -676,9 +676,11 @@ export async function fetchBlogVideos(): Promise<BlogVideo[]> {
   if (!base) return [];
 
   try {
-    const payload = await contentGet<unknown>("/content/videos", {
-      per_page: 50,
-    });
+    const payload = await contentGet<unknown>(
+      "/content/videos",
+      { per_page: 50 },
+      { cache: "no-store", bypassUpstreamCache: true }
+    );
     const rows = asArray(payload);
     const out = rows
       .map(normalizeVideoRow)
