@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { PiercingVisualPicker } from "@/components/booking/PiercingVisualPicker";
+import { ServiceChangeJewelryCatalog } from "@/components/booking/ServiceChangeJewelryCatalog";
 import { JEWELRY_TIER_PRICE_CAD } from "@/data/jewelry-tier-pricing";
 import { PIERCING_AFTERCARE_KIT_PRICE_CAD } from "@/data/piercing-booking-catalog";
 import {
@@ -232,6 +233,15 @@ export function PiercingBookingForm({
     () => expandedPiercingIds.filter((id) => !isPiercingServiceChangeId(id)),
     [expandedPiercingIds]
   );
+  const hasServiceChangeBooking = useMemo(
+    () => expandedPiercingIds.some((id) => isPiercingServiceChangeId(id)),
+    [expandedPiercingIds]
+  );
+  const isServiceChangeOnlyBooking = useMemo(
+    () =>
+      expandedPiercingIds.length > 0 && piercingIdsNeedingJewelry.length === 0,
+    [expandedPiercingIds.length, piercingIdsNeedingJewelry.length]
+  );
   const slotsFingerprint = useMemo(
     () => expandedPiercingIds.join("\0"),
     [expandedPiercingIds]
@@ -240,6 +250,8 @@ export function PiercingBookingForm({
     "change-jewelry" | "bring-own"
   >("change-jewelry");
   const [jewelryBySlot, setJewelryBySlot] = useState<SlotJewelryPick[]>([]);
+  const [serviceChangeJewelryPick, setServiceChangeJewelryPick] =
+    useState<SlotJewelryPick | null>(null);
   const [brokenJewelryCodes, setBrokenJewelryCodes] = useState<Set<string>>(
     () => new Set()
   );
@@ -300,8 +312,16 @@ export function PiercingBookingForm({
     }
     let jewelry = 0;
     if (jewelryChoice === "change-jewelry") {
-      for (const pick of jewelryBySlotAligned) {
-        jewelry += JEWELRY_TIER_PRICE_CAD[pick.tier];
+      for (let i = 0; i < expandedPiercingIds.length; i++) {
+        const piercingId = expandedPiercingIds[i]!;
+        if (isPiercingServiceChangeId(piercingId)) {
+          if (serviceChangeJewelryPick?.code) {
+            jewelry += JEWELRY_TIER_PRICE_CAD[serviceChangeJewelryPick.tier];
+          }
+          continue;
+        }
+        const pick = jewelryBySlotAligned[i];
+        if (pick?.code) jewelry += JEWELRY_TIER_PRICE_CAD[pick.tier];
       }
     }
     const aftercare = aftercareKit ? PIERCING_AFTERCARE_KIT_PRICE_CAD : 0;
@@ -315,7 +335,14 @@ export function PiercingBookingForm({
       taxCad: tax,
       totalCad: subtotal + tax,
     };
-  }, [piercingQuantities, jewelryChoice, jewelryBySlotAligned, aftercareKit]);
+  }, [
+    piercingQuantities,
+    jewelryChoice,
+    jewelryBySlotAligned,
+    aftercareKit,
+    expandedPiercingIds,
+    serviceChangeJewelryPick,
+  ]);
 
   const incrementPiercing = (id: string) => {
     setPiercingQuantities((prev) => ({
@@ -387,10 +414,11 @@ export function PiercingBookingForm({
 
   useEffect(() => {
     if (step !== 3) return;
-    if (piercingIdsNeedingJewelry.length === 0) {
+    if (isServiceChangeOnlyBooking) {
       setJewelryChoice("bring-own");
+      setServiceChangeJewelryPick(null);
     }
-  }, [step, piercingIdsNeedingJewelry.length]);
+  }, [step, isServiceChangeOnlyBooking]);
 
   useEffect(() => {
     if (phase !== "wizard") return;
@@ -505,12 +533,24 @@ export function PiercingBookingForm({
     setStep(3);
   };
 
-  const jewelrySlotsIncomplete =
-    jewelryChoice === "change-jewelry" &&
-    expandedPiercingIds.some(
+  const jewelrySlotsIncomplete = useMemo(() => {
+    if (jewelryChoice !== "change-jewelry") return false;
+    const piercingSlotsNeedCode = expandedPiercingIds.some(
       (id, i) =>
         !isPiercingServiceChangeId(id) && !jewelryBySlotAligned[i]?.code
     );
+    const serviceChangeNeedsCode =
+      hasServiceChangeBooking &&
+      expandedPiercingIds.some((id) => isPiercingServiceChangeId(id)) &&
+      !serviceChangeJewelryPick?.code;
+    return piercingSlotsNeedCode || serviceChangeNeedsCode;
+  }, [
+    jewelryChoice,
+    expandedPiercingIds,
+    jewelryBySlotAligned,
+    hasServiceChangeBooking,
+    serviceChangeJewelryPick,
+  ]);
 
   const handleStep3Next = () => {
     if (jewelrySlotsIncomplete) return;
@@ -561,17 +601,33 @@ export function PiercingBookingForm({
 
     const jewelrySlotsResolved: PiercingJewelrySlotLine[] =
       jewelryChoice === "change-jewelry"
-        ? expandedPiercingIds.map((piercingId, i) => {
-            const pick = jewelryBySlotAligned[i]!;
-            const code = pick.code!;
-            const item = jewelryItems.find((j) => j.code === code);
-            return {
-              piercingId,
-              tier: pick.tier,
-              code,
-              imageUrl: item?.image_url?.trim() || null,
-              feeCad: JEWELRY_TIER_PRICE_CAD[pick.tier],
-            };
+        ? expandedPiercingIds.flatMap((piercingId, i) => {
+            if (isPiercingServiceChangeId(piercingId)) {
+              if (!serviceChangeJewelryPick?.code) return [];
+              const code = serviceChangeJewelryPick.code;
+              const item = jewelryItems.find((j) => j.code === code);
+              return [
+                {
+                  piercingId,
+                  tier: serviceChangeJewelryPick.tier,
+                  code,
+                  imageUrl: item?.image_url?.trim() || null,
+                  feeCad: JEWELRY_TIER_PRICE_CAD[serviceChangeJewelryPick.tier],
+                },
+              ];
+            }
+            const pick = jewelryBySlotAligned[i];
+            if (!pick?.code) return [];
+            const item = jewelryItems.find((j) => j.code === pick.code);
+            return [
+              {
+                piercingId,
+                tier: pick.tier,
+                code: pick.code,
+                imageUrl: item?.image_url?.trim() || null,
+                feeCad: JEWELRY_TIER_PRICE_CAD[pick.tier],
+              },
+            ];
           })
         : [];
 
@@ -1012,9 +1068,11 @@ export function PiercingBookingForm({
         <div className="booking-wizard__panel">
           <h2 className="booking-wizard__heading">Choose jewelry</h2>
           <p className="booking-wizard__sub">
-            {expandedPiercingIds.length > 1
-              ? `You selected ${expandedPiercingIds.length} piercings. For each one below, choose a tier and a studio piece, in order. Each line has its own fee.`
-              : "Choose a jewelry price tier, then pick the studio piece you want for this piercing."}
+            {hasServiceChangeBooking
+              ? "Bring your own jewelry at no extra fee, or browse the full studio catalog below by tier. Each piece shows which piercing types it fits."
+              : expandedPiercingIds.length > 1
+                ? `You selected ${expandedPiercingIds.length} piercings. For each one below, choose a tier and a studio piece, in order. Each line has its own fee.`
+                : "Choose a jewelry price tier, then pick the studio piece you want for this piercing."}
           </p>
 
           <div className="booking-wizard__options booking-wizard__options--single-row">
@@ -1025,14 +1083,66 @@ export function PiercingBookingForm({
                 jewelryChoice === "bring-own" && "booking-wizard__option--selected"
               )}
               aria-pressed={jewelryChoice === "bring-own"}
-              onClick={() => setJewelryChoice("bring-own")}
+              onClick={() => {
+                setJewelryChoice("bring-own");
+                setServiceChangeJewelryPick(null);
+              }}
             >
               <span className="booking-wizard__option-title">Bring your own jewelry</span>
               <span className="booking-wizard__option-meta">No extra fee</span>
             </button>
           </div>
 
-          {jewelryChoice === "change-jewelry" ? (
+          {hasServiceChangeBooking ? (
+            <>
+              <div className="booking-wizard__jewelry-field">
+                <p className="booking-wizard__jewelry-field-label">Studio jewelry catalog</p>
+                <p className="booking-wizard__jewelry-field-hint booking-wizard__jewelry-field-hint--tier">
+                  All available pieces by tier (Basic through Pro premium). Tap a piece
+                  to select it and add the tier fee, or stay on bring your own above.
+                </p>
+              </div>
+              {jewelryError ? (
+                <div className="booking-wizard__error" role="alert">
+                  {jewelryError}
+                </div>
+              ) : null}
+              {jewelryLoading ? (
+                <p className="booking-wizard__sub">Loading jewelry…</p>
+              ) : jewelryItems.length === 0 ? (
+                <p className="booking-wizard__sub">
+                  {getBookingV1Base()
+                    ? "No studio jewelry is available to choose yet, or the list could not be loaded."
+                    : "Studio jewelry is unavailable because the booking API URL is not configured."}
+                </p>
+              ) : (
+                <ServiceChangeJewelryCatalog
+                  items={jewelryItems}
+                  brokenCodes={brokenJewelryCodes}
+                  onBrokenCode={(code) => {
+                    setBrokenJewelryCodes((prev) => {
+                      if (prev.has(code)) return prev;
+                      const next = new Set(prev);
+                      next.add(code);
+                      return next;
+                    });
+                  }}
+                  selectedCode={
+                    jewelryChoice === "change-jewelry"
+                      ? serviceChangeJewelryPick?.code ?? null
+                      : null
+                  }
+                  onSelectItem={(tier, code) => {
+                    setJewelryChoice("change-jewelry");
+                    setServiceChangeJewelryPick({ tier, code });
+                  }}
+                  onOpenGallery={(payload) => setJewelryLightbox(payload)}
+                />
+              )}
+            </>
+          ) : null}
+
+          {!hasServiceChangeBooking && jewelryChoice === "change-jewelry" ? (
             <>
               <div className="booking-wizard__jewelry-field">
                 <p className="booking-wizard__jewelry-field-label">Studio jewelry</p>
@@ -1055,18 +1165,182 @@ export function PiercingBookingForm({
                 </p>
               ) : (
                 expandedPiercingIds.map((piercingId, slotIndex) => {
-                  if (isPiercingServiceChangeId(piercingId)) {
-                    const def = getPiercingSelectionDef(piercingId);
-                    return (
-                      <p
-                        key={`${piercingId}-${slotIndex}`}
-                        className="booking-wizard__sub booking-wizard__jewelry-slot-skip"
-                      >
-                        {def?.label ?? piercingId}: studio jewelry selection is not
-                        required for this service.
+                  const pick =
+                    jewelryBySlotAligned[slotIndex] ?? {
+                      tier: "basic" as JewelryTier,
+                      code: null,
+                    };
+                  const visibleForSlot = filterJewelryForPiercingSlot(
+                    jewelryItems,
+                    pick.tier,
+                    piercingId,
+                    brokenJewelryCodes
+                  );
+                  const def = getPiercingSelectionDef(piercingId);
+                  const slotLabel = def?.label ?? piercingId;
+                  return (
+                    <div
+                      key={`${piercingId}-${slotIndex}`}
+                      className={cn(
+                        "booking-wizard__jewelry-slot",
+                        slotIndex > 0 && "booking-wizard__jewelry-slot--follow"
+                      )}
+                    >
+                      <p className="booking-wizard__jewelry-field-label">
+                        Piercing {slotIndex + 1} of {expandedPiercingIds.length}:{" "}
+                        {slotLabel}
                       </p>
-                    );
-                  }
+                      <div className="booking-wizard__options booking-wizard__options--tiers">
+                        {JEWELRY_TIERS.map((tier) => (
+                          <button
+                            key={tier}
+                            type="button"
+                            className={cn(
+                              "booking-wizard__option",
+                              pick.tier === tier && "booking-wizard__option--selected"
+                            )}
+                            aria-pressed={pick.tier === tier}
+                            onClick={() => {
+                              setJewelryChoice("change-jewelry");
+                              updateSlotJewelry(slotIndex, {
+                                tier,
+                                code: null,
+                              });
+                            }}
+                          >
+                            <span className="booking-wizard__option-title">
+                              {jewelryTierLabel(tier)}
+                            </span>
+                            <span className="booking-wizard__option-meta">
+                              {formatCad(JEWELRY_TIER_PRICE_CAD[tier])}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      {visibleForSlot.length === 0 ? (
+                        <p className="booking-wizard__sub">
+                          {catalogUsesPiercingTypeFilter
+                            ? "No jewelry in this tier matches this placement and catalog tags. Try another tier, or adjust piercings in the previous step."
+                            : "No jewelry in the catalog matches this placement for the tier you selected. Try another tier, or ask the studio to tag pieces in WordPress."}
+                        </p>
+                      ) : (
+                        <div className="booking-wizard__jewelry-grid">
+                          {visibleForSlot.map((item) => (
+                            <div
+                              key={`${slotIndex}-${item.code}`}
+                              className={cn(
+                                "booking-wizard__jewelry-card",
+                                pick.code === item.code &&
+                                  "booking-wizard__jewelry-card--selected"
+                              )}
+                            >
+                              <button
+                                type="button"
+                                className="booking-wizard__jewelry-card-main"
+                                onClick={() => {
+                                  setJewelryChoice("change-jewelry");
+                                  updateSlotJewelry(slotIndex, {
+                                    code: item.code,
+                                  });
+                                }}
+                              >
+                                <div className="booking-wizard__jewelry-image-wrap">
+                                  <Image
+                                    src={item.image_url}
+                                    alt={`Jewelry ${item.code}`}
+                                    fill
+                                    className="booking-wizard__jewelry-image"
+                                    sizes="(max-width: 859px) 45vw, 28vw"
+                                    decoding="async"
+                                    onError={() => {
+                                      setBrokenJewelryCodes((prev) => {
+                                        if (prev.has(item.code)) return prev;
+                                        const next = new Set(prev);
+                                        next.add(item.code);
+                                        return next;
+                                      });
+                                    }}
+                                  />
+                                </div>
+                                <div className="booking-wizard__jewelry-code">
+                                  <span className="booking-wizard__jewelry-code-label">
+                                    Jewelry code
+                                  </span>
+                                  <span className="booking-wizard__jewelry-code-value">
+                                    {item.code}
+                                  </span>
+                                </div>
+                              </button>
+                              {item.gallery_urls.length > 0 ? (
+                                <div className="booking-wizard__jewelry-thumbs">
+                                  {item.gallery_urls.map((url, gi) => (
+                                    <button
+                                      key={`${slotIndex}-${item.code}-g-${gi}`}
+                                      type="button"
+                                      className="booking-wizard__jewelry-thumb"
+                                      aria-label={`Larger photo ${gi + 2} for ${item.code}`}
+                                      onClick={() =>
+                                        setJewelryLightbox({
+                                          urls: [
+                                            item.image_url,
+                                            ...item.gallery_urls,
+                                          ],
+                                          index: gi + 1,
+                                          code: item.code,
+                                        })
+                                      }
+                                    >
+                                      <span className="booking-wizard__jewelry-thumb-pad">
+                                        <Image
+                                          src={url}
+                                          alt={`Jewelry ${item.code}, extra photo ${gi + 2}`}
+                                          fill
+                                          className="booking-wizard__jewelry-thumb-img"
+                                          sizes="44px"
+                                          decoding="async"
+                                        />
+                                      </span>
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </>
+          ) : null}
+
+          {hasServiceChangeBooking &&
+          piercingIdsNeedingJewelry.length > 0 &&
+          jewelryChoice === "change-jewelry" ? (
+            <>
+              <div className="booking-wizard__jewelry-field booking-wizard__jewelry-field--spaced">
+                <p className="booking-wizard__jewelry-field-label">Piercing jewelry</p>
+                <p className="booking-wizard__jewelry-field-hint booking-wizard__jewelry-field-hint--tier">
+                  For each new piercing below, pick a tier and matching studio piece.
+                </p>
+              </div>
+              {jewelryError ? (
+                <div className="booking-wizard__error" role="alert">
+                  {jewelryError}
+                </div>
+              ) : null}
+              {jewelryLoading ? (
+                <p className="booking-wizard__sub">Loading jewelry…</p>
+              ) : jewelryItems.length === 0 ? (
+                <p className="booking-wizard__sub">
+                  {getBookingV1Base()
+                    ? "No studio jewelry is available to choose yet, or the list could not be loaded."
+                    : "Studio jewelry is unavailable because the booking API URL is not configured."}
+                </p>
+              ) : (
+                expandedPiercingIds.map((piercingId, slotIndex) => {
+                  if (isPiercingServiceChangeId(piercingId)) return null;
                   const pick =
                     jewelryBySlotAligned[slotIndex] ?? {
                       tier: "basic" as JewelryTier,
@@ -1314,15 +1588,15 @@ export function PiercingBookingForm({
               <span className="booking-wizard__summary-label">Jewelry</span>
               <ul className="booking-wizard__piercing-lines">
                 {jewelryChoice === "change-jewelry"
-                  ? expandedPiercingIds.map((piercingId, slotIndex) => {
-                      const pick = jewelryBySlotAligned[slotIndex];
+                  ? expandedPiercingIds.flatMap((piercingId, slotIndex) => {
                       const def = getPiercingSelectionDef(piercingId);
                       const label = def?.label ?? piercingId;
-                      const tierFee = pick
-                        ? JEWELRY_TIER_PRICE_CAD[pick.tier]
-                        : 0;
-                      const tierLabel = pick ? jewelryTierLabel(pick.tier) : "";
-                      const code = pick?.code;
+                      const pick = isPiercingServiceChangeId(piercingId)
+                        ? serviceChangeJewelryPick
+                        : jewelryBySlotAligned[slotIndex];
+                      if (!pick?.code) return [];
+                      const tierFee = JEWELRY_TIER_PRICE_CAD[pick.tier];
+                      const tierLabel = jewelryTierLabel(pick.tier);
                       return (
                         <li
                           key={`jewelry-line-${piercingId}-${slotIndex}`}
@@ -1330,9 +1604,7 @@ export function PiercingBookingForm({
                         >
                           <span>
                             #{slotIndex + 1} {label}
-                            {code
-                              ? ` · ${tierLabel} · code ${code}`
-                              : ` · ${tierLabel}`}
+                            {` · ${tierLabel} · code ${pick.code}`}
                           </span>
                           <span>{formatCad(tierFee)}</span>
                         </li>

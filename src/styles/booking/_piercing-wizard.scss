@@ -72,6 +72,70 @@
 
 .booking-wizard__jewelry-field {
   margin-bottom: 1.25rem;
+
+  &--spaced {
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(250, 255, 238, 0.15);
+  }
+}
+
+.booking-wizard__jewelry-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.booking-wizard__jewelry-catalog-empty {
+  margin-top: 0.5rem;
+}
+
+.booking-wizard__jewelry-tier-section {
+  margin-top: 1.35rem;
+
+  &:first-child {
+    margin-top: 0.5rem;
+  }
+}
+
+.booking-wizard__jewelry-tier-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.booking-wizard__jewelry-tier-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: rgba(250, 255, 238, 0.95);
+}
+
+.booking-wizard__jewelry-tier-fee {
+  font-size: 0.82rem;
+  color: rgba(250, 255, 238, 0.62);
+}
+
+.booking-wizard__jewelry-fit {
+  margin: 0.4rem 0 0;
+  padding: 0 0.15rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgba(250, 255, 238, 0.72);
+  text-align: left;
+}
+
+.booking-wizard__jewelry-fit-label {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(250, 255, 238, 0.48);
 }
 
 .booking-wizard__jewelry-field-label {
