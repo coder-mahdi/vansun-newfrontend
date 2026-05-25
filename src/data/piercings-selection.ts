@@ -2,7 +2,11 @@
  * Visual piercing picker: three reference images + list selection + highlight rings.
  */
 
-export type PiercingImageKey = "face-body" | "lips" | "ears";
+export type PiercingImageKey = "face-body" | "lips" | "ears" | "service-change";
+
+/** Booking-only: jewelry change appointment (not on price-list carousel). */
+export const PIERCING_SERVICE_CHANGE_ID = "service-change";
+export const PIERCING_SERVICE_CHANGE_CAD = 15;
 
 export type PiercingPricingTier = "standard" | "lip";
 
@@ -46,6 +50,7 @@ export const PIERCING_PRICE_BY_ID_CAD: Record<string, number> = {
   "upper-lobe": 19,
   "vertical-helix": 45,
   "vertical-labret": 59,
+  [PIERCING_SERVICE_CHANGE_ID]: PIERCING_SERVICE_CHANGE_CAD,
 };
 
 export const PIERCING_IMAGE_META: Record<
@@ -69,6 +74,12 @@ export const PIERCING_IMAGE_META: Record<
     title: "Ear",
     categoryTabLabel: "Ear",
     alt: "Ear piercing reference",
+  },
+  "service-change": {
+    src: "",
+    title: "Service change",
+    categoryTabLabel: "Service change",
+    alt: "Jewelry service change appointment",
   },
 };
 
@@ -202,10 +213,22 @@ const ears: PiercingSelectionDef[] = earLabels.map((e, i) => {
   };
 });
 
+const serviceChange: PiercingSelectionDef[] = [
+  {
+    id: PIERCING_SERVICE_CHANGE_ID,
+    label: "Service Change",
+    image: "service-change",
+    pricing: "standard",
+    x: 50,
+    y: 50,
+  },
+];
+
 export const piercingSelectionDefs: PiercingSelectionDef[] = [
   ...faceBody,
   ...lips,
   ...ears,
+  ...serviceChange,
 ];
 
 /** Flat `{ id, label }[]` for quick reference / CMS sync. */
@@ -264,8 +287,19 @@ export function totalPiercingCount(quantities: Record<string, number>): number {
   return Object.values(quantities).reduce((a, b) => a + Math.max(0, Math.floor(b)), 0);
 }
 
+/** Reference-image categories (price list + booking carousel). */
 export const piercingImageOrder: PiercingImageKey[] = [
   "face-body",
   "lips",
   "ears",
 ];
+
+/** Booking piercing step: visual categories + service change tab. */
+export const piercingBookingImageOrder: PiercingImageKey[] = [
+  ...piercingImageOrder,
+  "service-change",
+];
+
+export function isPiercingServiceChangeId(id: string): boolean {
+  return id === PIERCING_SERVICE_CHANGE_ID;
+}

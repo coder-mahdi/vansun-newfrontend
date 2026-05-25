@@ -12,6 +12,7 @@ import {
   flattenPiercingQuantities,
   getPiercingPriceCadById,
   getPiercingSelectionDef,
+  isPiercingServiceChangeId,
   totalPiercingCount,
 } from "@/data/piercings-selection";
 import { useBookingSchedule } from "@/hooks/use-booking-schedule";
@@ -67,6 +68,7 @@ function filterJewelryForPiercingSlot(
   piercingId: string,
   brokenCodes: Set<string>
 ): JewelryStoreItem[] {
+  if (isPiercingServiceChangeId(piercingId)) return [];
   const def = getPiercingSelectionDef(piercingId);
   const areas = new Set<JewelryUsageArea>();
   if (def) {
@@ -226,6 +228,10 @@ export function PiercingBookingForm({
     () => flattenPiercingQuantities(piercingQuantities),
     [piercingQuantities]
   );
+  const piercingIdsNeedingJewelry = useMemo(
+    () => expandedPiercingIds.filter((id) => !isPiercingServiceChangeId(id)),
+    [expandedPiercingIds]
+  );
   const slotsFingerprint = useMemo(
     () => expandedPiercingIds.join("\0"),
     [expandedPiercingIds]
@@ -380,6 +386,13 @@ export function PiercingBookingForm({
   }, [step]);
 
   useEffect(() => {
+    if (step !== 3) return;
+    if (piercingIdsNeedingJewelry.length === 0) {
+      setJewelryChoice("bring-own");
+    }
+  }, [step, piercingIdsNeedingJewelry.length]);
+
+  useEffect(() => {
     if (phase !== "wizard") return;
     if (step === 1) return;
     wizardTopRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
@@ -492,13 +505,15 @@ export function PiercingBookingForm({
     setStep(3);
   };
 
+  const jewelrySlotsIncomplete =
+    jewelryChoice === "change-jewelry" &&
+    expandedPiercingIds.some(
+      (id, i) =>
+        !isPiercingServiceChangeId(id) && !jewelryBySlotAligned[i]?.code
+    );
+
   const handleStep3Next = () => {
-    if (
-      jewelryChoice === "change-jewelry" &&
-      jewelryBySlotAligned.some((s) => !s.code)
-    ) {
-      return;
-    }
+    if (jewelrySlotsIncomplete) return;
     setStep(4);
   };
 
@@ -506,8 +521,7 @@ export function PiercingBookingForm({
     if (
       !step1 ||
       totalPiercingCount(piercingQuantities) === 0 ||
-      (jewelryChoice === "change-jewelry" &&
-        jewelryBySlotAligned.some((s) => !s.code))
+      jewelrySlotsIncomplete
     ) {
       return;
     }
@@ -1041,6 +1055,18 @@ export function PiercingBookingForm({
                 </p>
               ) : (
                 expandedPiercingIds.map((piercingId, slotIndex) => {
+                  if (isPiercingServiceChangeId(piercingId)) {
+                    const def = getPiercingSelectionDef(piercingId);
+                    return (
+                      <p
+                        key={`${piercingId}-${slotIndex}`}
+                        className="booking-wizard__sub booking-wizard__jewelry-slot-skip"
+                      >
+                        {def?.label ?? piercingId}: studio jewelry selection is not
+                        required for this service.
+                      </p>
+                    );
+                  }
                   const pick =
                     jewelryBySlotAligned[slotIndex] ?? {
                       tier: "basic" as JewelryTier,
@@ -1212,10 +1238,7 @@ export function PiercingBookingForm({
             <button
               type="button"
               className="booking-wizard__btn booking-wizard__btn--primary"
-              disabled={
-                jewelryChoice === "change-jewelry" &&
-                jewelryBySlotAligned.some((s) => !s.code)
-              }
+              disabled={jewelrySlotsIncomplete}
               onClick={handleStep3Next}
             >
               Continue

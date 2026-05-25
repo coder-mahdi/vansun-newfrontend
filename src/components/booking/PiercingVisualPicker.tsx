@@ -8,6 +8,7 @@ import {
   getPiercingPriceCadById,
   getPiercingSelectionDef,
   getPiercingServiceCad,
+  piercingBookingImageOrder,
   piercingImageOrder,
   PIERCING_IMAGE_META,
 } from "@/data/piercings-selection";
@@ -139,9 +140,10 @@ export function PiercingVisualPicker({
   className,
 }: PiercingVisualPickerProps) {
   const [activeCategory, setActiveCategory] = useState<PiercingImageKey>(
-    piercingImageOrder[0]
+    piercingBookingImageOrder[0]
   );
   const activeDefs = defsForImage(activeCategory);
+  const showReferenceCarousel = activeCategory !== "service-change";
 
   const selectedEntries = Object.entries(quantities).filter(([, q]) => q > 0);
   const selectedServices = selectedEntries.map(([id, qty]) => {
@@ -159,14 +161,19 @@ export function PiercingVisualPicker({
 
   return (
     <div className={cn("piercing-visual-picker", className)}>
-      <div className="piercing-visual-picker__main">
+      <div
+        className={cn(
+          "piercing-visual-picker__main",
+          !showReferenceCarousel && "piercing-visual-picker__main--service-change"
+        )}
+      >
         <div className="piercing-visual-picker__category-tabs">
           <div
             className="piercing-visual-picker__tabs"
             role="tablist"
             aria-label="Piercing categories"
           >
-            {piercingImageOrder.map((key) => {
+            {piercingBookingImageOrder.map((key) => {
               const meta = PIERCING_IMAGE_META[key];
               const selected = activeCategory === key;
               return (
@@ -190,6 +197,7 @@ export function PiercingVisualPicker({
           </div>
         </div>
 
+        {showReferenceCarousel ? (
         <div className="piercing-visual-picker__media">
           <div
             className="piercing-visual-picker__carousel"
@@ -222,6 +230,12 @@ export function PiercingVisualPicker({
             })}
           </div>
         </div>
+        ) : (
+          <p className="piercing-visual-picker__service-change-intro">
+            Book a studio jewelry change. Select the option below to add it to your
+            appointment.
+          </p>
+        )}
 
         <div
           id="piercing-options-panel"

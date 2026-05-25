@@ -23,6 +23,35 @@
     display: flex;
     flex-direction: column;
     gap: 0.9rem;
+
+    &--service-change {
+      @media (min-width: 1024px) {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+          "cattabs"
+          "placements"
+          "total";
+      }
+    }
+  }
+
+  &__service-change-intro {
+    margin: 0.25rem 0 0;
+    padding: 0.65rem 0.85rem;
+    border-radius: 10px;
+    border: 1px solid rgba(250, 255, 238, 0.18);
+    background: rgba(0, 0, 0, 0.1);
+    color: rgba(250, 255, 238, 0.88);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    text-align: center;
+
+    @media (min-width: 1024px) {
+      grid-area: media;
+      max-width: 420px;
+      justify-self: end;
+      width: 100%;
+    }
   }
 
   &__media {
