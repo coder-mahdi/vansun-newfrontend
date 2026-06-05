@@ -1,0 +1,31 @@
+> vansun-newfrontend@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use 
+⚠ Port 3000 is in use by process 25700, usin
+⚠ Port 3000 is in use by process 25700, using available port 3001 
+⚠ Port 3000 is in use by process 25700, using available port 3001 instead.
+▲ Next.js 16.2.1 (Turb
+▲ Next.js 16.2.1 (Turbopack)
+- Local:         http:
+- Local:         http://localhost:3001
+- Network:       http:
+- Network:       http://10.0.0.5:3001
+✓ Ready in 330ms
+⨯ Another next dev ser
+⨯ Another next dev server is already running
+⨯ Another next dev server is already running.
+
+- Local:        http:/
+- Local:        http://localhost:3000
+- PID:          25700
+- Dir:          /Users
+- Dir:          /Users/callmeguide/Developer
+- Dir:          /Users/callmeguide/Developer/Work/vansun-newfronte
+- Dir:          /Users/callmeguide/Developer/Work/vansun-newfrontend
+- Log:          .next/
+- Log:          .next/dev/logs/next-developm
+- Log:          .next/dev/logs/next-development.log
+
+Rp
+Run kill 25700 to stop it.

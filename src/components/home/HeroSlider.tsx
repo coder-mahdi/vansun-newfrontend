@@ -7,6 +7,8 @@ import type { HomeHeroPayload } from "@/lib/home-cms";
 import type { WpMedia } from "@/lib/cms-wordpress";
 import { cn } from "@/lib/helpers";
 
+const TATNIX_APP_URL = "https://app.tattnix.com/";
+
 /** Match `.slider-item` widths in `_hero-section.scss` breakpoints (approximate vw). */
 /** Keep in sync with `.slider-item` width/height in `_hero-section.scss`. */
 function approxHeroSlideWidth(viewportWidth: number): number {
@@ -113,6 +115,21 @@ export function HeroSlider({
         </div>
         {title ? <h1>{title}</h1> : null}
         {subtitle ? <h2>{subtitle}</h2> : null}
+        <div className="hero-tattnix-promo">
+          <div className="hero-tattnix-tilt">
+            <a
+              href={TATNIX_APP_URL}
+              className="hero-tattnix-btn"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Tattnix Quiz ✦
+            </a>
+            <p className="hero-tattnix-tagline">
+              Looking for tattoo ideas based on your mood? Try this fun app.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );
